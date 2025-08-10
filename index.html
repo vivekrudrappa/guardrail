@@ -15,19 +15,32 @@
   <h3>Result:</h3>
   <pre id="result"></pre>
   
-  <script>
-    const API_URL = "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype"; // e.g., https://abc123.execute-api.us-east-1.amazonaws.com/prod
+<script>
+  const API_URL = "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype"; // e.g., https://abc123.execute-api.us-east-1.amazonaws.com/prod
 
-    async function callAPI() {
-      const text = document.getElementById("inputText").value;
+  async function callAPI() {
+    const text = document.getElementById("inputText").value;
+    console.log("Sending request with text:", text);
+
+    try {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text: text }) // key "text" matches what Lambda expects
       });
+
+      console.log("Response status:", res.status);
+
       const data = await res.json();
+      console.log("Response JSON:", data);
+
       document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      console.error("Error calling API:", err);
+      document.getElementById("result").textContent = "Error: " + err.message;
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
