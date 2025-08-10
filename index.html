@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Guardrail Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    textarea { width: 100%; height: 100px; }
+    pre { background: #f4f4f4; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>AI Guardrail Prototype</h1>
+  <textarea id="inputText" placeholder="Type something like... John lives in Denver and he is a good guy."></textarea><br><br>
+  <button onclick="callAPI()">Check</button>
+  <h3>Result:</h3>
+  <pre id="result"></pre>
+  
+  <script>
+    const API_URL = "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype"; // e.g., https://abc123.execute-api.us-east-1.amazonaws.com/prod
+
+    async function callAPI() {
+      const text = document.getElementById("inputText").value;
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+      document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
