@@ -43,8 +43,8 @@
     <input type="text" id="userInput" placeholder="Type something here..." /><br>
 
     <button onclick="checkText()">Check</button>
-
-    <div id="result"></div>
+    <h3>Result:</h3>
+    <pre id="result"></pre>
 
     <script>
         async function checkText() {
@@ -73,9 +73,10 @@
                 }
 
                 const data = await response.json();
-                resultDiv.innerHTML = JSON.stringify(data, null, 2);
+                document.getElementById("result").textContent = JSON.stringify(data, null, 2);
             } catch (error) {
-                resultDiv.innerHTML = "Error: " + error.message;
+                console.error("Error calling API:", error);
+                document.getElementById("result").textContent = "Error from UI: " + error.message;
             }
         }
     </script>
