@@ -1,84 +1,207 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AI Guardrail Prototype</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        input, select, button {
-            margin: 10px 0;
-            padding: 10px;
-            width: 300px;
-            font-size: 14px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            width: 320px;
-            white-space: pre-wrap;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Guardrail Prototype</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #2c3e50, #4ca1af);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    header p {
+      font-size: 1.1rem;
+      margin-top: 10px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    main {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    section {
+      margin-bottom: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    section h2 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+    }
+    .card {
+      background: #fdfdfd;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #4ca1af;
+      font-size: 1.1rem;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+    select, input, button {
+      margin: 8px 0;
+      padding: 12px;
+      width: 100%;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4ca1af;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #357f8a;
+    }
+    #result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f4f6f7;
+      border: 1px solid #ddd;
+      min-height: 120px;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: #555;
+      background: #f1f1f1;
+      margin-top: 40px;
+    }
+  </style>
 </head>
 <body>
-    <h2>AI Guardrail Prototype</h2>
-    
-    <label for="platform">Select Platform:</label><br>
-    <select id="platform">
+  <header>
+    <h1>AI Guardrail Prototype</h1>
+    <p>
+      AI Guardrails help ensure that AI systems behave safely, responsibly, and in alignment with 
+      business and ethical standards. This prototype demonstrates real-time input/output scanning 
+      to detect risks such as sensitive data leaks, bias, or harmful content.
+    </p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Why AI Guardrails Matter</h2>
+      <p>
+        As AI adoption accelerates, ensuring trust, compliance, and responsible AI use becomes critical. 
+        Guardrails act as safety nets, reducing risks of misinformation, sensitive data exposure, 
+        reputational harm, and regulatory non-compliance.
+      </p>
+    </section>
+
+    <section>
+      <h2>Types of Guardrails</h2>
+      <div class="grid">
+        <div class="card"><h3>PII & Sensitive Info</h3><p>Detects personal or confidential data such as SSNs, emails, or financial info.</p></div>
+        <div class="card"><h3>Ban Codes/Strings</h3><p>Blocks restricted words, codes, or phrases from being processed.</p></div>
+        <div class="card"><h3>Gibberish</h3><p>Prevents meaningless or non-constructive input that could pollute results.</p></div>
+        <div class="card"><h3>Invisible Text</h3><p>Identifies hidden characters or obfuscated input that may be malicious.</p></div>
+        <div class="card"><h3>Language Detection</h3><p>Ensures input is in allowed languages for compliance and relevance.</p></div>
+        <div class="card"><h3>Prompt Injection</h3><p>Stops adversarial prompts trying to bypass AI rules.</p></div>
+        <div class="card"><h3>Regex & Custom Rules</h3><p>Flexible pattern matching to block business-specific sensitive data.</p></div>
+        <div class="card"><h3>Secrets/Keys</h3><p>Detects accidental leakage of API keys, tokens, or credentials.</p></div>
+        <div class="card"><h3>Inappropriate Sentiment</h3><p>Flags hostile, offensive, or aggressive tone.</p></div>
+        <div class="card"><h3>Toxicity & Harm</h3><p>Detects hate speech, violence, or harmful content.</p></div>
+        <div class="card"><h3>Bias & Fairness</h3><p>Checks for biased language or discriminatory output.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>How This Demo Works</h2>
+      <p>
+        Enter text below, select the platform (AWS or Azure), and click <b>Check</b>. 
+        The system sends your input to a guardrail service, which evaluates it against 
+        multiple scanning rules and returns structured results in real-time.
+      </p>
+      <label for="platform">Select Platform:</label>
+      <select id="platform">
         <option value="aws">AWS</option>
         <option value="azure">Azure</option>
-    </select><br>
+      </select>
 
-    <label for="userInput">Enter text to check:</label><br>
-    <input type="text" id="userInput" placeholder="Type something here..." /><br>
+      <label for="userInput">Enter text to check:</label>
+      <input type="text" id="userInput" placeholder="Type something here..." />
 
-    <button onclick="checkText()">Check</button>
-    <h3>Result:</h3>
-    <pre id="result"></pre>
+      <button onclick="checkText()">Check</button>
 
-    <script>
-        async function checkText() {
-            const platform = document.getElementById('platform').value;
-            const inputText = document.getElementById('userInput').value;
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = "Processing...";
+      <h3>Result:</h3>
+      <pre id="result">Awaiting input...</pre>
+    </section>
+  </main>
 
-            // API endpoints
-            const endpoints = {
-                aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
-                azure: "https://azureaiguardrail.azurewebsites.net/api/guardrail"
-            };
+  <footer>
+    © 2025 AI Guardrail Demo | Building Trustworthy AI
+  </footer>
 
-            try {
-                const response = await fetch(endpoints[platform], {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ text: inputText })
-                });
+  <script>
+    async function checkText() {
+      const platform = document.getElementById('platform').value;
+      const inputText = document.getElementById('userInput').value;
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "Processing...";
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
+      // API endpoints
+      const endpoints = {
+        aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
+        azure: "https://azureaiguardrail.azurewebsites.net/api/guardrail"
+      };
 
-                const data = await response.json();
-                document.getElementById("result").textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                console.error("Error calling API:", error);
-                document.getElementById("result").textContent = "Error from UI: " + error.message;
-            }
+      try {
+        const response = await fetch(endpoints[platform], {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: inputText })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-    </script>
+
+        const data = await response.json();
+        document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        console.error("Error calling API:", error);
+        document.getElementById("result").textContent = "Error from UI: " + error.message;
+      }
+    }
+  </script>
 </body>
 </html>
