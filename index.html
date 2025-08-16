@@ -56,6 +56,7 @@
       border: 1px solid #e0e0e0;
       border-radius: 10px;
       padding: 15px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
     }
     .card h3 {
       margin-top: 0;
@@ -114,6 +115,70 @@
       background: #f1f1f1;
       margin-top: 40px;
     }
+    /* Chatbot styling */
+    .chat-container {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      height: 500px;
+      margin-top: 20px;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+    .chat-message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 12px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+    .chat-message.user {
+      background: #e3f2fd;
+      align-self: flex-end;
+    }
+    .chat-message.bot {
+      background: #ede7f6;
+      align-self: flex-start;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+    .chat-input textarea {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 0 0 0 12px;
+      resize: none;
+      font-size: 14px;
+    }
+    .chat-input button {
+      padding: 12px 20px;
+      border: none;
+      background: #1a237e;
+      color: white;
+      cursor: pointer;
+      border-radius: 0 0 12px 0;
+    }
+    .chat-input button:hover {
+      background: #283593;
+    }
+    .config-panel {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .config-panel label {
+      display: block;
+      margin: 8px 0;
+    }
   </style>
 </head>
 <body>
@@ -154,25 +219,37 @@
     </section>
 
     <section>
-      <h2>How This Demo Works</h2>
+      <h2>Chatbot with AI Guardrails</h2>
       <p>
-        Enter text below, select the platform (AWS or Azure), and click <b>Check</b>. 
-        The system sends your input to a guardrail service, which evaluates it against 
-        multiple scanning rules and returns structured results in real-time.
+        Try the chatbot below. Depending on the configuration, your input and/or output will be filtered 
+        by AWS Guardrail services before or after going to the LLM (ChatGPT). Toggle guardrails below to see the difference.
       </p>
-      <label for="platform">Select Platform:</label>
-      <select id="platform">
-        <option value="aws">AWS</option>
-        <option value="azure">Azure</option>
+      <label for="apikey">🔑 Enter Open API Key </label>
+      <input type="password" id="apikey" placeholder="sk-..." style="width:100%; padding:10px;" />
+      <label for="model">⚙️ Select Open AI GPT Model</label>
+      <select id="model">
+        <option value="gpt-4o-mini">gpt-4o-mini (fast, cheap)</option>
+        <option value="gpt-4o">gpt-4o</option>
+        <option value="gpt-3.5-turbo" selected>gpt-3.5-turbo</option>
       </select>
 
-      <label for="userInput">Enter text to check:</label>
-      <textarea id="userInput" placeholder="Type something here... like mentioning person name, date of birth, address"></textarea><br>
+      <div class="config-panel">
+        <h3>Configuration</h3>
+        <label><input type="checkbox" id="inputFilter"> Enable Input Guardrails</label>
+        <label><input type="checkbox" id="outputFilter"> Enable Output Guardrails</label>
+        <label>Masking Option:</label>
+        <label><input type="radio" name="maskOption" value="redact" checked> Redact</label>
+        <label><input type="radio" name="maskOption" value="mask"> Mask</label>
+        <label><input type="radio" name="maskOption" value="remove"> Remove</label>
+      </div>
 
-      <button onclick="checkText()">Check</button>
-
-      <h3>Result:</h3>
-      <pre id="result">Awaiting input...</pre>
+      <div class="chat-container">
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input">
+          <textarea id="chatInput" placeholder="Type your message..."></textarea>
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -181,34 +258,75 @@
   </footer>
 
   <script>
-    async function checkText() {
-      const platform = document.getElementById('platform').value;
-      const inputText = document.getElementById('userInput').value;
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = "Processing...";
+    const endpoints = {
+      aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
+      openai: "https://api.openai.com/v1/chat/completions" // check it once
+    };
 
-      // API endpoints
-      const endpoints = {
-        aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
-        azure: "https://azureaiguardrail.azurewebsites.net/api/guardrail"
-      };
+    function appendMessage(text, sender) {
+      const chatMessages = document.getElementById("chatMessages");
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("chat-message", sender);
+      msgDiv.textContent = text;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const inputText = document.getElementById("chatInput").value.trim();
+      if (!inputText) return;
+
+      appendMessage(inputText, "user");
+      document.getElementById("chatInput").value = "";
+
+      const useInputFilter = document.getElementById("inputFilter").checked;
+      const useOutputFilter = document.getElementById("outputFilter").checked;
+      const maskOption = document.querySelector('input[name="maskOption"]:checked').value;
+
+      let processedInput = inputText;
 
       try {
-        const response = await fetch(endpoints[platform], {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: inputText })
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        // Step 1: Apply input guardrails if enabled
+        if (useInputFilter) {
+          const resp = await fetch(endpoints.aws, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: processedInput, option: maskOption })
+          });
+          const data = await resp.json();
+          processedInput = data.masked_text || processedInput;
         }
 
-        const data = await response.json();
-        document.getElementById("result").textContent = JSON.stringify(data, null, 2);
-      } catch (error) {
-        console.error("Error calling API:", error);
-        document.getElementById("result").textContent = "Error from UI: " + error.message;
+        // Step 2: Call OpenAI LLM
+        let llmResponse = "Simulated LLM response (replace with OpenAI API call).";
+        const respLLM = await fetch(endpoints.openai, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          "Authorization": `Bearer ${key}`,
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "user", content: processedInput }],
+            temperature: 0.5,
+            max_tokens: 512
+          })
+        });
+        const dataLLM = await respLLM.json();
+        llmResponse = dataLLM.reply || llmResponse;
+
+        // Step 3: Apply output guardrails if enabled
+        if (useOutputFilter) {
+          const resp = await fetch(endpoints.aws, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: llmResponse, option: maskOption })
+          });
+          const data = await resp.json();
+          llmResponse = data.masked_text || llmResponse;
+        }
+
+        appendMessage(llmResponse, "bot");
+      } catch (err) {
+        appendMessage("Error: " + err.message, "bot");
       }
     }
   </script>
