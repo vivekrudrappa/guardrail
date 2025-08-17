@@ -286,6 +286,11 @@
     const key = document.getElementById("apikey").value;
     const model = document.getElementById("model").value;
 
+    // Step 0: Clear previous results before starting
+    document.getElementById("resultText").value = "";      // User View output
+    document.getElementById("jsonOutput").value = "";      // Developer View JSON
+    document.getElementById("dashboardContent").innerHTML = ""; // Dashboard content
+
     resultTabDiv.textContent = "Processing...";
 
     if (!inputText) return;
