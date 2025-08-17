@@ -80,6 +80,7 @@
       box-sizing: border-box;
     }
     textarea {
+      background: #f8f9fa;
       margin: 10px 0;
       padding: 12px;
       width: 100%;
@@ -233,7 +234,6 @@
             <div class="mb-3">
               <label class="fw-bold">Original Input:</label>
               <textarea id="originalText" class="form-control" readonly></textarea>
-              <pre id="originalText">Awaiting input...</pre>
             </div>
             <div class="mb-3">
               <label class="fw-bold">Input Filter Applied:</label> <span id="inputFilterStatus"></span>
@@ -249,7 +249,6 @@
           <div class="tab-pane fade" id="developer" role="tabpanel">
             <label class="fw-bold">Raw JSON Response</label>
             <textarea id="jsonOutput" class="form-control" readonly></textarea>
-            <pre id="jsonOutput">Awaiting input...</pre>
           </div>
     
           <!-- Dashboard View -->
@@ -359,7 +358,7 @@
       document.getElementById("finalOutput").value = llmResponse;
 
       // --- Developer View ---
-      document.getElementById("jsonOutput").innerText = JSON.stringify(inputData, null, 2);
+      document.getElementById("jsonOutput").value = JSON.stringify(inputData, null, 2);
 
       // --- Simulated Backend Results (replace with actual AWS capability to plot charts for below via AWS API call) ---
       const simulatedResponse = {
