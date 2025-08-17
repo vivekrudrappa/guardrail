@@ -128,6 +128,13 @@
       display: block;
       margin: 8px 0;
     }
+    pre {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      max-height: 300px;
+      overflow: auto;
+    }
   </style>
 </head>
 <body>
@@ -201,61 +208,65 @@
   
         <button onclick="checkText()">Check</button>
   
-        <h3>Result:</h3>
-        <pre id="result">Awaiting input...</pre>
+        <!-- <pre id="result">Awaiting input...</pre> -->
       </section>
 
-      <!-- Tabbed Results -->
-      <ul class="nav nav-tabs" id="resultTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab">User View</button>
-          <pre id="user-tab">Awaiting input...</pre>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="dev-tab" data-bs-toggle="tab" data-bs-target="#developer" type="button" role="tab">Developer View</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="dash-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
-        </li>
-      </ul>
-
-      
-      <div class="tab-content mt-3">
-        <!-- User View -->
-        <div class="tab-pane fade show active" id="user" role="tabpanel">
-          <div class="mb-3">
-            <label class="fw-bold">Original Input:</label>
-            <textarea id="originalText" class="form-control" readonly></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="fw-bold">Input Filter Applied:</label> <span id="inputFilterStatus"></span>
-            <textarea id="filteredInput" class="form-control" readonly></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="fw-bold">Output Filter Applied:</label> <span id="outputFilterStatus"></span>
-            <textarea id="finalOutput" class="form-control" readonly></textarea>
-          </div>
-        </div>
-        
-        <!-- Developer View -->
-        <div class="tab-pane fade" id="developer" role="tabpanel">
-          <label class="fw-bold">Raw JSON Response</label>
-          <pre id="jsonOutput">{ }</pre>
-        </div>
+      <section>
+        <h3>Results:</h3>
+        <!-- Tabbed Results -->
+        <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab">User View</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="dev-tab" data-bs-toggle="tab" data-bs-target="#developer" type="button" role="tab">Developer View</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="dash-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
+          </li>
+        </ul>
   
-        <!-- Dashboard View -->
-        <div class="tab-pane fade" id="dashboard" role="tabpanel">
-          <div class="row">
-            <div class="col-md-6">
-              <canvas id="piiChart"></canvas>
+        
+        <div class="tab-content mt-3">
+          <!-- User View -->
+          <div class="tab-pane fade show active" id="user" role="tabpanel">
+            <div class="mb-3">
+              <label class="fw-bold">Original Input:</label>
+              <textarea id="originalText" class="form-control" readonly></textarea>
+              <pre id="originalText">Awaiting input...</pre>
             </div>
-            <div class="col-md-6">
-              <ul class="list-group" id="summaryList"></ul>
+            <div class="mb-3">
+              <label class="fw-bold">Input Filter Applied:</label> <span id="inputFilterStatus"></span>
+              <textarea id="filteredInput" class="form-control" readonly></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="fw-bold">Output Filter Applied:</label> <span id="outputFilterStatus"></span>
+              <textarea id="finalOutput" class="form-control" readonly></textarea>
             </div>
           </div>
+          
+          <!-- Developer View -->
+          <div class="tab-pane fade" id="developer" role="tabpanel">
+            <label class="fw-bold">Raw JSON Response</label>
+            <textarea id="jsonOutput" class="form-control" readonly></textarea>
+            <pre id="jsonOutput">Awaiting input...</pre>
+          </div>
+    
+          <!-- Dashboard View -->
+          <div class="tab-pane fade" id="dashboard" role="tabpanel">
+            <div class="row">
+              <div class="col-md-6">
+                <canvas id="piiChart"></canvas>
+              </div>
+              <div class="col-md-6">
+                <ul class="list-group" id="summaryList"></ul>
+              </div>
+            </div>
+          </div>
+        <!-- Tab View closure -->
         </div>
-      <!-- Tab View closure -->
-      </div>
+       <!-- Results section closure -->
+      </section>
     <!-- AI prototype with config section closure -->
     </section>
   </main>
@@ -272,12 +283,10 @@
 
   async function checkText() {
     const inputText = document.getElementById('userInput').value;
-    const resultDiv = document.getElementById('result');
-    const resultTabDiv = document.getElementById('user-tab');
+    const resultTabDiv = document.getElementById('originalText');
     const key = document.getElementById("apikey").value;
     const model = document.getElementById("model").value;
 
-    resultDiv.textContent = "Processing...";
     resultTabDiv.textContent = "Processing...";
 
     if (!inputText) return;
@@ -342,9 +351,6 @@
         llmResponse = outputData.masked_text || llmResponse;
       }
 
-      // Show result
-      resultDiv.textContent = llmResponse;
-
       // --- User View ---
       document.getElementById("originalText").value = inputText;
       document.getElementById("inputFilterStatus").innerText = useInputFilter ? "Yes" : "No";
@@ -389,7 +395,7 @@
     // checkText function try block
     } catch (error) {
       console.error("Error calling API via UI:", error);
-      resultDiv.textContent = "❌ Error: " + error.message;
+      resultTabDiv.textContent = "❌ Error: " + error.message;
     }
   // checkText function closure
   }
