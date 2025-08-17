@@ -267,78 +267,89 @@
     © 2025 Astra NextGen Technologies, LLC. | Building Trustworthy AI
   </footer>
 
-  <script>
-    const endpoints = {
-      aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
-      openai: "https://api.openai.com/v1/chat/completions" // check it once
-    };
+<script>
+  const endpoints = {
+    aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
+    openai: "https://api.openai.com/v1/chat/completions"
+  };
 
-    async function checkText() {
-      const inputText = document.getElementById('userInput').value;
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = "Processing...";
-      if (!inputText) return;
+  async function checkText() {
+    const inputText = document.getElementById('userInput').value;
+    const resultDiv = document.getElementById('result');
+    const key = document.getElementById("apikey").value;
+    const model = document.getElementById("model").value;
 
-      document.getElementById("userInput").value = "Enter anything else to check ...";
+    resultDiv.textContent = "Processing...";
 
-      const useInputFilter = document.getElementById("inputFilter").checked;
-      const useOutputFilter = document.getElementById("outputFilter").checked;
-      const maskOption = document.querySelector('input[name="maskOption"]:checked').value;
+    if (!inputText) return;
 
-      let processedInput = inputText;
+    let processedInput = inputText;
 
-      try {
-        // Step 1: Apply input guardrails if enabled by user
-        if (useInputFilter) {
-          const resp = await fetch(endpoints.aws, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: processedInput, option: maskOption })
-          });
-          if (!resp.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const data = await resp.json();
-          processedInput = data.masked_text || processedInput;
+    const useInputFilter = document.getElementById("inputFilter").checked;
+    const useOutputFilter = document.getElementById("outputFilter").checked;
+    const maskOption = document.querySelector('input[name="maskOption"]:checked').value;
 
-        // Step 2: Call OpenAI LLM
-        let llmResponse = "Simulated LLM response (replace with OpenAI API call).";
-        const respLLM = await fetch(endpoints.openai, {
+    try {
+      // Step 1: Apply input guardrails
+      if (useInputFilter) {
+        const resp = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          "Authorization": `Bearer ${key}`,
-          body: JSON.stringify({
-            model,
-            messages: [{ role: "user", content: processedInput }],
-            temperature: 0.5,
-            max_tokens: 512
-          })
+          body: JSON.stringify({ text: processedInput, option: maskOption })
         });
-        const dataLLM = await respLLM.json();
-        llmResponse = dataLLM.reply || llmResponse;
-
-        // Step 3: Apply output guardrails if enabled
-        if (useOutputFilter) {
-          const resp = await fetch(endpoints.aws, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: llmResponse, option: maskOption })
-          });
-          if (!resp.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const data = await resp.json();
-          llmResponse = data.masked_text || llmResponse;
+        if (!resp.ok) {
+          throw new Error(`HTTP error! Status: ${resp.status}`);
         }
-
-        const data = llmResponse;
-        document.getElementById("result").textContent = JSON.stringify(data, null, 2);
-
-      } catch (error) {
-        console.error("Error calling API via UI:", error);
-        document.getElementById("result").textContent = "Error from UI: " + error.message;
+        const data = await resp.json();
+        processedInput = data.masked_text || processedInput;
       }
+
+      // Step 2: Call OpenAI
+      let llmResponse = "No response from LLM.";
+      const respLLM = await fetch(endpoints.openai, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: processedInput }],
+          temperature: 0.5,
+          max_tokens: 512
+        })
+      });
+
+      if (!respLLM.ok) {
+        throw new Error(`OpenAI error! Status: ${respLLM.status}`);
+      }
+
+      const dataLLM = await respLLM.json();
+      llmResponse = dataLLM.choices?.[0]?.message?.content || llmResponse;
+
+      // Step 3: Apply output guardrails
+      if (useOutputFilter) {
+        const resp = await fetch(endpoints.aws, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: llmResponse, option: maskOption })
+        });
+        if (!resp.ok) {
+          throw new Error(`HTTP error! Status: ${resp.status}`);
+        }
+        const data = await resp.json();
+        llmResponse = data.masked_text || llmResponse;
+      }
+
+      // Show result
+      resultDiv.textContent = llmResponse;
+
+    } catch (error) {
+      console.error("Error calling API via UI:", error);
+      resultDiv.textContent = "❌ Error: " + error.message;
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
