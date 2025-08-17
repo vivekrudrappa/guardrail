@@ -136,6 +136,60 @@
       max-height: 300px;
       overflow: auto;
     }
+    /* Chat modal styling */
+    .chat-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+    .chat-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 12px;
+      width: 400px;
+      max-height: 80%;
+      display: flex;
+      flex-direction: column;
+    }
+    .close {
+      float: right;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .chat-window {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      height: 300px;
+    }
+    .chat-message {
+      margin: 5px 0;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+    .user-msg {
+      background: #e1f5fe;
+      align-self: flex-end;
+    }
+    .bot-msg {
+      background: #f1f1f1;
+      align-self: flex-start;
+    }
+    .chat-input-container {
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input-container input {
+      flex: 1;
+      padding: 6px;
+    }
+    /* Chat modal styling end */
   </style>
 </head>
 <body>
@@ -269,6 +323,24 @@
     <!-- AI prototype with config section closure -->
     </section>
   </main>
+
+  <!-- Chat Demo Launcher -->
+  <button onclick="openChat()">💬 Open Chat Demo</button>
+  
+  <!-- Chat Popup Modal -->
+  <div id="chatModal" class="chat-modal">
+    <div class="chat-content">
+      <span class="close" onclick="closeChat()">&times;</span>
+      <h3>Live Chat Client Demo</h3>
+      
+      <div id="chatWindow" class="chat-window"></div>
+      
+      <div class="chat-input-container">
+        <input type="text" id="chatInput" placeholder="Type your message to send it to LLM..." onkeypress="if(event.key==='Enter'){sendChat();}">
+        <button onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>
 
   <footer>
     © 2025 Astra NextGen Technologies, LLC. | Building Trustworthy AI
@@ -405,6 +477,122 @@
       resultTabDiv.textContent = "❌ Error: " + error.message;
     }
   // checkText function closure
+  }
+</script>
+
+<script>
+  function openChat() {
+    document.getElementById("chatModal").style.display = "block";
+  }
+  function closeChat() {
+    document.getElementById("chatModal").style.display = "none";
+  }
+  
+  // 🔹 Simulated Input Guardrail
+  async function applyInputGuardrail(text) {
+      const resp = await fetch(endpoints.aws, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text })
+      });
+      if (!resp.ok) {
+        throw new Error(`HTTP error from input guardrail in chat client! Status: ${resp.status}`);
+      }
+      inputData = await resp.json();
+      return inputData;
+  }
+  
+  // 🔹 Simulated Output Guardrail
+  async function applyOutputGuardrail(text) {
+    // Redact certain keywords
+    const resp = await fetch(endpoints.aws, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text })
+    });
+    if (!resp.ok) {
+      throw new Error(`HTTP error from output guardrail in chat client! Status: ${resp.status}`);
+    }
+    outputData = await resp.json();
+    safeResponseData = outputData.redacted_text || text;
+    return safeResponseData;
+  }
+  
+  async function sendChat() {
+    const inputBox = document.getElementById("chatInput");
+    const chatWindow = document.getElementById("chatWindow");
+    const userText = inputBox.value.trim();
+    const useInputFilter = document.getElementById("inputFilter").checked;
+    const useOutputFilter = document.getElementById("outputFilter").checked;
+    const endpoints = {
+      aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
+      openai: "https://api.openai.com/v1/chat/completions"
+    };
+    if (!userText) return;
+  
+    // Show user message
+    const userDiv = document.createElement("div");
+    userDiv.className = "chat-message user-msg";
+    userDiv.textContent = userText;
+    chatWindow.appendChild(userDiv);
+    inputBox.value = "";
+    
+    userDiv.textContent = "Processing...";
+    
+  
+    // Scroll
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  
+    // Step 1: Apply Input Guardrail
+    const inputCheck = await applyInputGuardrail(userText);
+    if (useInputFilter && inputCheck.pii.detected) {
+      userDiv.textContent = "Applying Input Guardrails and personnal identity data detected...";
+      const blockDiv = document.createElement("div");
+      blockDiv.className = "chat-message bot-msg";
+      blockDiv.textContent = "⚠️ " + inputCheck.reason + ". Please re-enter, click send without sensitive data.";
+      chatWindow.appendChild(blockDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      return;
+    }
+  
+    // Step 2: Call OpenAI API
+    const key = document.getElementById("apikey").value;
+    const model = document.getElementById("model").value || "gpt-4o-mini";
+    
+    let llmResponse = "Demo response from LLM."; // fallback in case API fails
+  
+    try {
+      const response = await fetch(endpoints.openai, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: "user", content: inputCheck.redacted_text }]
+        })
+      });
+      const data = await response.json();
+      llmResponse = data.choices?.[0]?.message?.content || llmResponse;
+    } catch (err) {
+      llmResponse = "Error calling LLM in chat client: " + err.message;
+    }
+  
+    // Step 3: Apply Output Guardrail
+    let safeResponse = llmResponse;
+    if (useOutputFilter) {
+      userDiv.textContent = "Applying Output Guardrails...";
+      const safeResponse = await applyOutputGuardrail(llmResponse);
+    }
+  
+    // Show bot response
+    const botDiv = document.createElement("div");
+    botDiv.className = "chat-message bot-msg";
+    botDiv.textContent = safeResponse;
+    chatWindow.appendChild(botDiv);
+  
+    chatWindow.scrollTop = chatWindow.scrollHeight;
   }
 </script>
 
