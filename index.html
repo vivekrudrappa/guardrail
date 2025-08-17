@@ -297,6 +297,7 @@
 
     try {
       // Step 1: Apply input guardrails
+      let inputData = {};
       if (useInputFilter) {
         resultTabDiv.textContent = "Applying Input Guardrails...";
         const resp = await fetch(endpoints.aws, {
@@ -307,7 +308,7 @@
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
-        const inputData = await resp.json();
+        inputData = await resp.json();
         processedInput = inputData.masked_text || processedInput;
       }
 
@@ -336,6 +337,7 @@
       llmResponse = dataLLM.choices?.[0]?.message?.content || llmResponse;
 
       // Step 3: Apply output guardrails
+      let outputData = {};
       if (useOutputFilter) {
         resultTabDiv.textContent = "Applying Output Guardrails...";
         const resp = await fetch(endpoints.aws, {
@@ -346,7 +348,7 @@
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
-        const outputData = await resp.json();
+        outputData = await resp.json();
         llmResponse = outputData.masked_text || llmResponse;
       }
 
@@ -358,7 +360,8 @@
       document.getElementById("finalOutput").value = llmResponse;
 
       // --- Developer View ---
-      document.getElementById("jsonOutput").value = JSON.stringify(inputData, null, 2);
+      const mergedData = { inputData, outputData };
+      document.getElementById("jsonOutput").value = JSON.stringify(mergedData, null, 2);
 
       // --- Simulated Backend Results (replace with actual AWS capability to plot charts for below via AWS API call) ---
       const simulatedResponse = {
