@@ -237,10 +237,6 @@
         <h3>Configuration</h3>
         <label><input type="checkbox" id="inputFilter"> Enable Input Guardrails</label>
         <label><input type="checkbox" id="outputFilter"> Enable Output Guardrails</label>
-        <label>Masking Option:</label>
-        <label><input type="radio" name="maskOption" value="redact" checked> Redact</label>
-        <label><input type="radio" name="maskOption" value="mask"> Mask</label>
-        <label><input type="radio" name="maskOption" value="remove"> Remove</label>
       </div>
 
       <section>
@@ -287,7 +283,6 @@
 
     const useInputFilter = document.getElementById("inputFilter").checked;
     const useOutputFilter = document.getElementById("outputFilter").checked;
-    const maskOption = document.querySelector('input[name="maskOption"]:checked').value;
 
     try {
       // Step 1: Apply input guardrails
@@ -295,7 +290,7 @@
         const resp = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: processedInput, option: maskOption })
+          body: JSON.stringify({ text: processedInput })
         });
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
@@ -332,7 +327,7 @@
         const resp = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: llmResponse, option: maskOption })
+          body: JSON.stringify({ text: llmResponse })
         });
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
