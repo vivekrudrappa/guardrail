@@ -136,58 +136,95 @@
       max-height: 300px;
       overflow: auto;
     }
-    /* Chat modal styling */
-    .chat-modal {
+
+    /* Floating Chat Button */
+    #chatButton {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+  
+    /* Chat Popup */
+    #chatPopup {
       display: none;
       position: fixed;
-      z-index: 1000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-    }
-    .chat-content {
+      bottom: 80px;
+      right: 20px;
+      width: 350px;
+      max-height: 500px;
       background: #fff;
-      margin: 5% auto;
-      padding: 20px;
       border-radius: 12px;
-      width: 400px;
-      max-height: 80%;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+      font-family: Arial, sans-serif;
     }
-    .close {
-      float: right;
-      font-size: 22px;
+  
+    .chat-header {
+      background: #4CAF50;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+    }
+  
+    .chat-body {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background: #f9f9f9;
+    }
+  
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+  
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+    }
+  
+    .chat-input button {
+      background: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 15px;
       cursor: pointer;
     }
-    .chat-window {
-      flex: 1;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 10px;
-      height: 300px;
+  
+    .message {
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 18px;
+      max-width: 75%;
+      line-height: 1.4;
+      clear: both;
     }
-    .chat-message {
-      margin: 5px 0;
-      padding: 6px 10px;
-      border-radius: 8px;
+  
+    .user-message {
+      background: #DCF8C6;
+      float: right;
+      text-align: right;
     }
-    .user-msg {
-      background: #e1f5fe;
-      align-self: flex-end;
-    }
-    .bot-msg {
-      background: #f1f1f1;
-      align-self: flex-start;
-    }
-    .chat-input-container {
-      display: flex;
-      gap: 8px;
-    }
-    .chat-input-container input {
-      flex: 1;
-      padding: 6px;
+  
+    .bot-message {
+      background: #eee;
+      float: left;
+      text-align: left;
     }
     /* Chat modal styling end */
   </style>
@@ -324,21 +361,19 @@
     </section>
   </main>
 
-  <!-- Chat Demo Launcher -->
-  <button onclick="openChat()">💬 Open Chat Demo</button>
+  <!-- Floating Chat Button -->
+  <div id="chatButton" onclick="toggleChatPopup()">💬</div>
   
-  <!-- Chat Popup Modal -->
-  <div id="chatModal" class="chat-modal">
-    <div class="chat-content">
-      <span class="close" onclick="closeChat()">&times;</span>
-      <h3>Live Chat Client Demo</h3>
-      
-      <div id="chatWindow" class="chat-window"></div>
-      
-      <div class="chat-input-container">
-        <input type="text" id="chatInput" placeholder="Type your message to send it to LLM..." onkeypress="if(event.key==='Enter'){sendChat();}">
-        <button onclick="sendChat()">Send</button>
-      </div>
+  <!-- Chat Popup -->
+  <div id="chatPopup">
+    <div class="chat-header">
+      <span>AI Guardrail Chatbox Demo</span>
+      <button onclick="toggleChatPopup()">✖</button>
+    </div>
+    <div class="chat-body" id="chatMessages"></div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Type your message to send it to LLM..." />
+      <button onclick="sendChat()">Send</button>
     </div>
   </div>
 
@@ -481,88 +516,52 @@
 </script>
 
 <script>
-  function openChat() {
-    document.getElementById("chatModal").style.display = "block";
+  function toggleChatPopup() {
+    const popup = document.getElementById("chatPopup");
+    popup.style.display = popup.style.display === "flex" ? "none" : "flex";
   }
-  function closeChat() {
-    document.getElementById("chatModal").style.display = "none";
-  }
-  
-  // 🔹 Simulated Input Guardrail
-  async function applyInputGuardrail(text) {
-      const resp = await fetch(endpoints.aws, {
+
+  async function sendChat() {
+    const inputField = document.getElementById("chatInput");
+    const message = inputField.value.trim();
+    if (!message) return;
+
+    // Show user message
+    appendMessage(message, "user-message");
+    inputField.value = "";
+
+    // Step 1: Input Guardrail
+    let blocked = false;
+    let guardrailReason = "";
+
+    try {
+      const response = await fetch(endpoints.aws, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text })
+        body: JSON.stringify({ text: message })
       });
-      if (!resp.ok) {
-        throw new Error(`HTTP error from input guardrail in chat client! Status: ${resp.status}`);
+      const data = await response.json();
+
+      if (data && data.blocked) {
+        blocked = true;
+        guardrailReason = data.reason || "Sensitive information detected.";
       }
-      inputData = await resp.json();
-      return inputData;
-  }
-  
-  // 🔹 Simulated Output Guardrail
-  async function applyOutputGuardrail(text) {
-    // Redact certain keywords
-    const resp = await fetch(endpoints.aws, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text })
-    });
-    if (!resp.ok) {
-      throw new Error(`HTTP error from output guardrail in chat client! Status: ${resp.status}`);
+    } catch (err) {
+      console.error("Guardrail check failed:", err);
     }
-    outputData = await resp.json();
-    safeResponseData = outputData.redacted_text || text;
-    return safeResponseData;
-  }
-  
-  async function sendChat() {
-    const inputBox = document.getElementById("chatInput");
-    const chatWindow = document.getElementById("chatWindow");
-    const userText = inputBox.value.trim();
-    const useInputFilter = document.getElementById("inputFilter").checked;
-    const useOutputFilter = document.getElementById("outputFilter").checked;
-    const endpoints = {
-      aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
-      openai: "https://api.openai.com/v1/chat/completions"
-    };
-    if (!userText) return;
-  
-    // Show user message
-    const userDiv = document.createElement("div");
-    userDiv.className = "chat-message user-msg";
-    userDiv.textContent = userText;
-    chatWindow.appendChild(userDiv);
-    inputBox.value = "";
-    
-    userDiv.textContent = "Processing...";
-    
-  
-    // Scroll
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-  
-    // Step 1: Apply Input Guardrail
-    const inputCheck = await applyInputGuardrail(userText);
-    if (useInputFilter && inputCheck.pii.detected) {
-      userDiv.textContent = "Applying Input Guardrails and personnal identity data detected...";
-      const blockDiv = document.createElement("div");
-      blockDiv.className = "chat-message bot-msg";
-      blockDiv.textContent = "⚠️ " + inputCheck.reason + ". Please re-enter, click send without sensitive data.";
-      chatWindow.appendChild(blockDiv);
-      chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    if (blocked) {
+      appendMessage("⚠️ " + guardrailReason + " Please re-enter without sensitive info.", "bot-message");
       return;
     }
-  
-    // Step 2: Call OpenAI API
-    const key = document.getElementById("apikey").value;
-    const model = document.getElementById("model").value || "gpt-4o-mini";
-    
-    let llmResponse = "Demo response from LLM."; // fallback in case API fails
-  
+
+    // Step 2: Call OpenAI
+    appendMessage("Processing...", "bot-message");
     try {
-      const response = await fetch(endpoints.openai, {
+      const key = document.getElementById("apikey").value;
+      const model = document.getElementById("model").value;
+
+      const llmResponse = await fetch(endpoints.openai, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -570,29 +569,44 @@
         },
         body: JSON.stringify({
           model: model,
-          messages: [{ role: "user", content: inputCheck.redacted_text }]
+          messages: [{ role: "user", content: message }]
         })
       });
-      const data = await response.json();
-      llmResponse = data.choices?.[0]?.message?.content || llmResponse;
-    } catch (err) {
-      llmResponse = "Error calling LLM in chat client: " + err.message;
+      const llmData = await llmResponse.json();
+
+      let llmText = llmData?.choices?.[0]?.message?.content || "No response";
+
+      // Step 3: Output Guardrail
+      let finalText = llmText;
+      try {
+        const outResponse = await fetch(endpoints.aws, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: llmText, checkOutput: true })
+        });
+        const outData = await outResponse.json();
+        if (outData?.redacted) {
+          finalText = outData.redacted;
+        }
+      } catch (err) {
+        console.error("Output guardrail failed:", err);
+      }
+
+      // Replace "Processing..." with real response
+      const chatBody = document.getElementById("chatMessages");
+      chatBody.lastChild.textContent = finalText;
+    } catch (error) {
+      appendMessage("❌ Error calling LLM.", "bot-message");
     }
-  
-    // Step 3: Apply Output Guardrail
-    let safeResponse = llmResponse;
-    if (useOutputFilter) {
-      userDiv.textContent = "Applying Output Guardrails...";
-      const safeResponse = await applyOutputGuardrail(llmResponse);
-    }
-  
-    // Show bot response
-    const botDiv = document.createElement("div");
-    botDiv.className = "chat-message bot-msg";
-    botDiv.textContent = safeResponse;
-    chatWindow.appendChild(botDiv);
-  
-    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function appendMessage(text, className) {
+    const chatBody = document.getElementById("chatMessages");
+    const msg = document.createElement("div");
+    msg.className = "message " + className;
+    msg.textContent = text;
+    chatBody.appendChild(msg);
+    chatBody.scrollTop = chatBody.scrollHeight;
   }
 </script>
 
