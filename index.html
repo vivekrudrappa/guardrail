@@ -219,10 +219,10 @@
     </section>
 
     <section>
-      <h2>Chatbot with AI Guardrails</h2>
+      <h2>Options for AI Guardrails</h2>
       <p>
-        Try the chatbot below. Depending on the configuration, your input and/or output will be filtered 
-        by AWS Guardrail services before or after going to the LLM (ChatGPT). Toggle guardrails below to see the difference.
+        Choose the options below. Depending on your configuration, your input and/or LLM output will be filtered 
+        by AWS Guardrail services before or after going to the LLM (ChatGPT). 
       </p>
       <label for="apikey">🔑 Enter Open API Key </label>
       <input type="password" id="apikey" placeholder="sk-..." style="width:100%; padding:10px;" />
@@ -243,13 +243,23 @@
         <label><input type="radio" name="maskOption" value="remove"> Remove</label>
       </div>
 
-      <div class="chat-container">
-        <div id="chatMessages" class="chat-messages"></div>
-        <div class="chat-input">
-          <textarea id="chatInput" placeholder="Type your message..."></textarea>
-          <button onclick="sendMessage()">Send</button>
-        </div>
-      </div>
+      <section>
+        <h2>How This Demo Works</h2>
+        <p>
+          Enter text below, toggle/select options above, and click <b>Check</b>. 
+          The system sends your input to a guardrail service based on input/output filter selection, which evaluates it against 
+          multiple scanning rules both things going into LLM and response coming out of LLM. Shows the results in real-time.
+        </p>
+  
+        <label for="userInput">Enter text to check:</label>
+        <textarea id="userInput" placeholder="Type something here... like mentioning person name, date of birth, address"></textarea><br>
+  
+        <button onclick="checkText()">Check</button>
+  
+        <h3>Result:</h3>
+        <pre id="result">Awaiting input...</pre>
+      </section>
+
     </section>
   </main>
 
@@ -263,21 +273,13 @@
       openai: "https://api.openai.com/v1/chat/completions" // check it once
     };
 
-    function appendMessage(text, sender) {
-      const chatMessages = document.getElementById("chatMessages");
-      const msgDiv = document.createElement("div");
-      msgDiv.classList.add("chat-message", sender);
-      msgDiv.textContent = text;
-      chatMessages.appendChild(msgDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const inputText = document.getElementById("chatInput").value.trim();
+    async function checkText() {
+      const inputText = document.getElementById('userInput').value;
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = "Processing...";
       if (!inputText) return;
 
-      appendMessage(inputText, "user");
-      document.getElementById("chatInput").value = "";
+      document.getElementById("userInput").value = "Enter anything else to check ...";
 
       const useInputFilter = document.getElementById("inputFilter").checked;
       const useOutputFilter = document.getElementById("outputFilter").checked;
@@ -286,16 +288,18 @@
       let processedInput = inputText;
 
       try {
-        // Step 1: Apply input guardrails if enabled
+        // Step 1: Apply input guardrails if enabled by user
         if (useInputFilter) {
           const resp = await fetch(endpoints.aws, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: processedInput, option: maskOption })
           });
+          if (!resp.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
           const data = await resp.json();
           processedInput = data.masked_text || processedInput;
-        }
 
         // Step 2: Call OpenAI LLM
         let llmResponse = "Simulated LLM response (replace with OpenAI API call).";
@@ -320,13 +324,19 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: llmResponse, option: maskOption })
           });
+          if (!resp.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
           const data = await resp.json();
           llmResponse = data.masked_text || llmResponse;
         }
 
-        appendMessage(llmResponse, "bot");
-      } catch (err) {
-        appendMessage("Error: " + err.message, "bot");
+        const data = llmResponse;
+        document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+
+      } catch (error) {
+        console.error("Error calling API via UI:", error);
+        document.getElementById("result").textContent = "Error from UI: " + error.message;
       }
     }
   </script>
