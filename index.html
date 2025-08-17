@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
   <title>Astra AI Guardrail Prototype</title>
   <style>
     body {
@@ -115,59 +117,6 @@
       background: #f1f1f1;
       margin-top: 40px;
     }
-    /* Chatbot styling */
-    .chat-container {
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      height: 500px;
-      margin-top: 20px;
-    }
-    .chat-messages {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-    }
-    .chat-message {
-      margin: 10px 0;
-      padding: 10px 15px;
-      border-radius: 12px;
-      max-width: 70%;
-      word-wrap: break-word;
-    }
-    .chat-message.user {
-      background: #e3f2fd;
-      align-self: flex-end;
-    }
-    .chat-message.bot {
-      background: #ede7f6;
-      align-self: flex-start;
-    }
-    .chat-input {
-      display: flex;
-      border-top: 1px solid #ccc;
-    }
-    .chat-input textarea {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 0 0 0 12px;
-      resize: none;
-      font-size: 14px;
-    }
-    .chat-input button {
-      padding: 12px 20px;
-      border: none;
-      background: #1a237e;
-      color: white;
-      cursor: pointer;
-      border-radius: 0 0 12px 0;
-    }
-    .chat-input button:hover {
-      background: #283593;
-    }
     .config-panel {
       margin-top: 20px;
       padding: 15px;
@@ -222,7 +171,7 @@
       <h2>Options for AI Guardrails</h2>
       <p>
         Choose the options below. Depending on your configuration, your input and/or LLM output will be filtered 
-        by AWS Guardrail services before or after going to the LLM (ChatGPT). 
+        by AWS Guardrail services before or after going to the LLM (OpenAI). 
       </p>
       <label for="apikey">🔑 Enter Open API Key </label>
       <input type="password" id="apikey" placeholder="sk-..." style="width:100%; padding:10px;" />
@@ -256,6 +205,58 @@
         <pre id="result">Awaiting input...</pre>
       </section>
 
+      <!-- Tabbed Results -->
+      <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab">User View</button>
+          <pre id="user-tab">Awaiting input...</pre>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="dev-tab" data-bs-toggle="tab" data-bs-target="#developer" type="button" role="tab">Developer View</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="dash-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
+        </li>
+      </ul>
+
+      
+      <div class="tab-content mt-3">
+        <!-- User View -->
+        <div class="tab-pane fade show active" id="user" role="tabpanel">
+          <div class="mb-3">
+            <label class="fw-bold">Original Input:</label>
+            <textarea id="originalText" class="form-control" readonly></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="fw-bold">Input Filter Applied:</label> <span id="inputFilterStatus"></span>
+            <textarea id="filteredInput" class="form-control" readonly></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="fw-bold">Output Filter Applied:</label> <span id="outputFilterStatus"></span>
+            <textarea id="finalOutput" class="form-control" readonly></textarea>
+          </div>
+        </div>
+        
+        <!-- Developer View -->
+        <div class="tab-pane fade" id="developer" role="tabpanel">
+          <label class="fw-bold">Raw JSON Response</label>
+          <pre id="jsonOutput">{ }</pre>
+        </div>
+  
+        <!-- Dashboard View -->
+        <div class="tab-pane fade" id="dashboard" role="tabpanel">
+          <div class="row">
+            <div class="col-md-6">
+              <canvas id="piiChart"></canvas>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-group" id="summaryList"></ul>
+            </div>
+          </div>
+        </div>
+      <!-- Tab View closure -->
+      </div>
+    <!-- AI prototype with config section closure -->
     </section>
   </main>
 
@@ -272,10 +273,12 @@
   async function checkText() {
     const inputText = document.getElementById('userInput').value;
     const resultDiv = document.getElementById('result');
+    const resultTabDiv = document.getElementById('user-tab');
     const key = document.getElementById("apikey").value;
     const model = document.getElementById("model").value;
 
     resultDiv.textContent = "Processing...";
+    resultTabDiv.textContent = "Processing...";
 
     if (!inputText) return;
 
@@ -287,6 +290,7 @@
     try {
       // Step 1: Apply input guardrails
       if (useInputFilter) {
+        resultTabDiv.textContent = "Applying Input Guardrails...";
         const resp = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -295,12 +299,13 @@
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
-        const data = await resp.json();
-        processedInput = data.masked_text || processedInput;
+        const inputData = await resp.json();
+        processedInput = inputData.masked_text || processedInput;
       }
 
       // Step 2: Call OpenAI
       let llmResponse = "No response from LLM.";
+      resultTabDiv.textContent = "Sending info to Generative AI LLM...";
       const respLLM = await fetch(endpoints.openai, {
         method: "POST",
         headers: { 
@@ -324,6 +329,7 @@
 
       // Step 3: Apply output guardrails
       if (useOutputFilter) {
+        resultTabDiv.textContent = "Applying Output Guardrails...";
         const resp = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -332,19 +338,63 @@
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
-        const data = await resp.json();
-        llmResponse = data.masked_text || llmResponse;
+        const outputData = await resp.json();
+        llmResponse = outputData.masked_text || llmResponse;
       }
 
       // Show result
       resultDiv.textContent = llmResponse;
 
+      // --- User View ---
+      document.getElementById("originalText").value = inputText;
+      document.getElementById("inputFilterStatus").innerText = useInputFilter ? "Yes" : "No";
+      document.getElementById("filteredInput").value = processedInput ? processedInput : "N/A";
+      document.getElementById("outputFilterStatus").innerText = useOutputFilter ? "Yes" : "No";
+      document.getElementById("finalOutput").value = llmResponse;
+
+      // --- Developer View ---
+      document.getElementById("jsonOutput").innerText = JSON.stringify(inputData, null, 2);
+
+      // --- Simulated Backend Results (replace with actual AWS capability to plot charts for below via AWS API call) ---
+      const simulatedResponse = {
+        piiDetected: 3,
+        sensitiveDetected: 1,
+        awsResponse: {
+          piiEntities: ["Phone", "Email", "Name"],
+          toxicity: "low",
+          sentiment: "negative"
+        }
+      };
+        // --- Dashboard ---
+      const ctx = document.getElementById('piiChart');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['PII Detected', 'Sensitive Data'],
+          datasets: [{
+            label: 'Counts',
+            data: [simulatedResponse.piiDetected, simulatedResponse.sensitiveDetected]
+          }]
+        }
+      });
+    
+      const summary = document.getElementById("summaryList");
+      summary.innerHTML = `
+        <li class="list-group-item">PII Detected: ${simulatedResponse.piiDetected}</li>
+        <li class="list-group-item">Sensitive Data: ${simulatedResponse.sensitiveDetected}</li>
+        <li class="list-group-item">Toxicity: ${simulatedResponse.awsResponse.toxicity}</li>
+        <li class="list-group-item">Sentiment: ${simulatedResponse.awsResponse.sentiment}</li>
+      `;
+
+    // checkText function try block
     } catch (error) {
       console.error("Error calling API via UI:", error);
       resultDiv.textContent = "❌ Error: " + error.message;
     }
+  // checkText function closure
   }
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
