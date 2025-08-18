@@ -569,6 +569,10 @@
 
     // Step 2: Call OpenAI
     appendMessage("Sending user input to LLM...", "bot-message");
+    if (!key) {
+      appendMessage("Please enter the Open AI LLM API Key (password)", "bot-message");
+      return;
+    }
     let llmText = "Default no response";
     try {
       const key = document.getElementById("apikey").value;
@@ -611,10 +615,10 @@
       }
     }
 
-    // appendMessage(finalText, "bot-message");
+    appendMessage(finalText, "bot-message");
     // Replace "Processing or progress status..." with real response
-    const chatBody = document.getElementById("chatMessages");
-    chatBody.lastChild.textContent = finalText;
+    // const chatBody = document.getElementById("chatMessages");
+    // chatBody.lastChild.textContent = finalText;
   } // sendChat function closure
 
   function appendMessage(text, className) {
