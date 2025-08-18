@@ -516,6 +516,10 @@
       // Step 2: Call OpenAI
       let llmResponse = "No response from LLM.";
       resultTabDiv.textContent = "Sending info to Generative AI LLM...";
+      if (!key) {
+        resultTabDiv.textContent = "Please enter the Open AI LLM API Key (password) above key box to continue...";
+        return;
+      }
       const respLLM = await fetch(endpoints.openai, {
         method: "POST",
         headers: { 
