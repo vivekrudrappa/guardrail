@@ -185,12 +185,12 @@
       overflow-y: auto;
       background: #f9f9f9;
     }
-  
+    /*
     .chat-input {
       display: flex;
       border-top: 1px solid #ddd;
     }
-  
+    */
     .chat-input input {
       flex: 1;
       height: 20px;
@@ -227,6 +227,36 @@
       float: left;
       text-align: left;
     }
+    .chat-input {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #f9f9f9;
+    }
+    
+    .chat-input textarea {
+      flex: 1;
+      min-height: 40px;   /* 2 lines */
+      max-height: 120px;  /* won’t grow too big */
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      resize: none;       /* prevent manual resize */
+      line-height: 1.4;
+      font-size: 14px;
+      overflow-y: auto;
+    }
+    /*
+    .chat-input button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #007bff;
+    }
+    */
     /* Chat modal old styling end */
 
   </style>
@@ -374,9 +404,14 @@
     </div>
     <div class="chat-body" id="chatMessages"></div>
     <div class="chat-input">
+      <textarea id="chatInput" placeholder="Type your message to send it to LLM..."></textarea>
+      <button id="sendBtn">➤</button>
+    </div>
+
+    <!--div class="chat-input">
       <input type="text" id="chatInput" placeholder="Type your message to send it to LLM..." />
       <button onclick="sendChat()">Send</button>
-    </div>
+    </div-->
   </div>
 
   <footer>
