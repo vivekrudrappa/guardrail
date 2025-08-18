@@ -465,7 +465,7 @@
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
         inputData = await resp.json();
-        processedInput = inputData.masked_text || processedInput;
+        processedInput = inputData.redacted_text || processedInput;
       }
 
       // Step 2: Call OpenAI
@@ -505,7 +505,7 @@
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
         outputData = await resp.json();
-        llmResponse = outputData.masked_text || llmResponse;
+        llmResponse = outputData.redacted_text || llmResponse;
       }
 
       // --- User View ---
@@ -649,8 +649,8 @@
           body: JSON.stringify({ text: llmText, checkOutput: true })
         });
         const outData = await outResponse.json();
-        if (outData?.redacted) {
-          finalText = outData.redacted;
+        if (outData?.redacted_text) {
+          finalText = outData.redacted_text;
         }
       } catch (err) {
         console.error("Output guardrail failed in chat client:", err);
