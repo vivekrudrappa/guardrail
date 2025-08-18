@@ -569,15 +569,15 @@
 
     // Step 2: Call OpenAI
     appendMessage("Sending user input to LLM...", "bot-message");
+    const key = document.getElementById("apikey").value;
+    const model = document.getElementById("model").value;
     if (!key) {
       appendMessage("Please enter the Open AI LLM API Key (password)", "bot-message");
       return;
     }
+    
     let llmText = "Default no response";
     try {
-      const key = document.getElementById("apikey").value;
-      const model = document.getElementById("model").value;
-
       const llmResponse = await fetch(endpoints.openai, {
         method: "POST",
         headers: {
