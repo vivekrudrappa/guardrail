@@ -137,7 +137,7 @@
       overflow: auto;
     }
 
-    /* Floating Chat Button */
+    /* Floating Chat Button old one
     #chatButton {
       position: fixed;
       bottom: 20px;
@@ -151,8 +151,29 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
       z-index: 1000;
     }
-    #chatButton button:hover {
+    #chatButton:hover {
       background-color: #357f8a;
+    } */
+    /* Floating Chat Button */
+    #chatButton {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #4ca1af;
+      color: white;
+      padding: 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    #chatButton:hover {
+      background-color: #357f8a;
+      transform: translateY(-4px); /* lifts button upward */
+      box-shadow: 0 8px 12px rgba(0,0,0,0.3); /* stronger shadow */
     }
   
     /* Chat Popup */
@@ -293,7 +314,8 @@
 </head>
 <body>
   <header>
-    <h1>AI Guardrail Prototype</h1>
+    <h1>Astra AI Guardrail Prototype</h1>
+    <h4>Feather light guardrail solutions at your door steps</h4>
     <p>
       AI Guardrails help ensure that AI systems behave safely, responsibly, and in alignment with 
       business and ethical standards. This prototype demonstrates real-time input/output scanning 
@@ -429,7 +451,7 @@
   <!-- Chat Popup -->
   <div id="chatPopup">
     <div class="chat-header">
-      <span>Chatbot</span>
+      <span>Astrabot</span>
       <button onclick="toggleChatPopup()">✖</button>
     </div>
     <div class="chat-body" id="chatMessages"></div>
