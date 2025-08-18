@@ -569,7 +569,7 @@
 
     // Step 2: Call OpenAI
     appendMessage("Sending user input to LLM...", "bot-message");
-    let llmText = "No response";
+    let llmText = "Default no response";
     try {
       const key = document.getElementById("apikey").value;
       const model = document.getElementById("model").value;
@@ -611,10 +611,10 @@
       }
     }
 
-    appendMessage(finalText, "bot-message");
+    // appendMessage(finalText, "bot-message");
     // Replace "Processing or progress status..." with real response
-    // const chatBody = document.getElementById("chatMessages");
-    // chatBody.lastChild.textContent = finalText;
+    const chatBody = document.getElementById("chatMessages");
+    chatBody.lastChild.textContent = finalText;
   } // sendChat function closure
 
   function appendMessage(text, className) {
