@@ -152,7 +152,7 @@
       z-index: 1000;
     }
   
-    /* Chat Popup */
+    /* Chat Popup old reference
     #chatPopup {
       display: none;
       position: fixed;
@@ -226,7 +226,95 @@
       float: left;
       text-align: left;
     }
-    /* Chat modal styling end */
+    /* Chat modal old styling end */
+      /* Chat button */
+    #chatBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0d6efd; /* matches Bootstrap primary */
+      color: white;
+      border: none;
+      border-radius: 50%;
+      padding: 14px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    #chatBtn:hover { transform: scale(1.1); }
+  
+    /* Chat popup */
+    .chat-popup {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 320px;
+      max-height: 500px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
+      background: #fff;
+      font-family: Arial, sans-serif;
+      flex-direction: column;
+    }
+  
+    .chat-header {
+      background: #0d6efd;
+      color: white;
+      padding: 12px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0 6px;
+      line-height: 1;
+    }
+    .close-btn:hover { color: #ffcccc; }
+  
+    .chat-messages {
+      padding: 10px;
+      height: 320px;
+      overflow-y: auto;
+      background: #f8f9fa;
+    }
+  
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+      background: #fff;
+    }
+  
+    .chat-input textarea {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      font-size: 14px;
+      resize: none;
+      height: 55px; /* more height */
+      outline: none;
+    }
+  
+    .send-btn {
+      background: #0d6efd;
+      border: none;
+      color: white;
+      padding: 0 14px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .send-btn:hover { background: #084298; }
   </style>
 </head>
 <body>
@@ -364,16 +452,32 @@
   <!-- Floating Chat Button -->
   <div id="chatButton" onclick="toggleChatPopup()">💬</div>
   
-  <!-- Chat Popup -->
+  <!-- Chat Popup old backup
   <div id="chatPopup">
     <div class="chat-header">
-      <span>AI Guardrail Chatbox Demo</span>
+      <span>Chatbox Demo</span>
       <button onclick="toggleChatPopup()">✖</button>
     </div>
     <div class="chat-body" id="chatMessages"></div>
     <div class="chat-input">
       <input type="text" id="chatInput" placeholder="Type your message to send it to LLM..." />
       <button onclick="sendChat()">Send</button>
+    </div>
+  </div-->
+
+  <!-- Chat Button -->
+  <button id="chatBtn">💬 Chat</button>
+  
+  <!-- Chat Popup -->
+  <div id="chatPopup" class="chat-popup">
+    <div class="chat-header">
+      <span>AI Guardrail Chat</span>
+      <button id="closeChat" class="close-btn">&times;</button>
+    </div>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-input">
+      <textarea id="chatInput" placeholder="Type a message..."></textarea>
+      <button id="sendChat" class="send-btn">➤</button>
     </div>
   </div>
 
@@ -516,6 +620,13 @@
 </script>
 
 <script>
+  const chatBtn = document.getElementById("chatBtn");
+  const chatPopup = document.getElementById("chatPopup");
+  const closeChat = document.getElementById("closeChat");
+
+  chatBtn.onclick = () => chatPopup.style.display = "flex";
+  closeChat.onclick = () => chatPopup.style.display = "none";
+  
   function toggleChatPopup() {
     const popup = document.getElementById("chatPopup");
     popup.style.display = popup.style.display === "flex" ? "none" : "flex";
