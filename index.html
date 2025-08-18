@@ -452,7 +452,7 @@
   <!-- Floating Chat Button -->
   <div id="chatButton" onclick="toggleChatPopup()">💬</div>
   
-  <!-- Chat Popup old backup
+  <!-- Chat Popup -->
   <div id="chatPopup">
     <div class="chat-header">
       <span>Chatbox Demo</span>
@@ -462,22 +462,6 @@
     <div class="chat-input">
       <input type="text" id="chatInput" placeholder="Type your message to send it to LLM..." />
       <button onclick="sendChat()">Send</button>
-    </div>
-  </div-->
-
-  <!-- Chat Button -->
-  <button id="chatBtn">💬 Chat</button>
-  
-  <!-- Chat Popup -->
-  <div id="chatPopup" class="chat-popup">
-    <div class="chat-header">
-      <span>AI Guardrail Chat</span>
-      <button id="closeChat" class="close-btn">&times;</button>
-    </div>
-    <div id="chatMessages" class="chat-messages"></div>
-    <div class="chat-input">
-      <textarea id="chatInput" placeholder="Type a message..."></textarea>
-      <button id="sendChat" class="send-btn">➤</button>
     </div>
   </div>
 
@@ -620,12 +604,6 @@
 </script>
 
 <script>
-  const chatBtn = document.getElementById("chatBtn");
-  const chatPopup = document.getElementById("chatPopup");
-  const closeChat = document.getElementById("closeChat");
-
-  chatBtn.onclick = () => chatPopup.style.display = "flex";
-  closeChat.onclick = () => chatPopup.style.display = "none";
   
   function toggleChatPopup() {
     const popup = document.getElementById("chatPopup");
