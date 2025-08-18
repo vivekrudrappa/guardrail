@@ -152,7 +152,7 @@
       z-index: 1000;
     }
   
-    /* Chat Popup old reference
+    /* Chat Popup */
     #chatPopup {
       display: none;
       position: fixed;
@@ -162,7 +162,7 @@
       max-height: 500px;
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -227,94 +227,7 @@
       text-align: left;
     }
     /* Chat modal old styling end */
-      /* Chat button */
-    #chatBtn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #0d6efd; /* matches Bootstrap primary */
-      color: white;
-      border: none;
-      border-radius: 50%;
-      padding: 14px;
-      font-size: 20px;
-      cursor: pointer;
-      box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-    }
-    #chatBtn:hover { transform: scale(1.1); }
-  
-    /* Chat popup */
-    .chat-popup {
-      display: none;
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      width: 320px;
-      max-height: 500px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
-      background: #fff;
-      font-family: Arial, sans-serif;
-      flex-direction: column;
-    }
-  
-    .chat-header {
-      background: #0d6efd;
-      color: white;
-      padding: 12px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  
-    .close-btn {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 22px;
-      cursor: pointer;
-      padding: 0 6px;
-      line-height: 1;
-    }
-    .close-btn:hover { color: #ffcccc; }
-  
-    .chat-messages {
-      padding: 10px;
-      height: 320px;
-      overflow-y: auto;
-      background: #f8f9fa;
-    }
-  
-    .chat-input {
-      display: flex;
-      border-top: 1px solid #ddd;
-      background: #fff;
-    }
-  
-    .chat-input textarea {
-      flex: 1;
-      border: none;
-      padding: 10px;
-      font-size: 14px;
-      resize: none;
-      height: 55px; /* more height */
-      outline: none;
-    }
-  
-    .send-btn {
-      background: #0d6efd;
-      border: none;
-      color: white;
-      padding: 0 14px;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-    }
-    .send-btn:hover { background: #084298; }
+
   </style>
 </head>
 <body>
@@ -613,6 +526,8 @@
   async function sendChat() {
     const inputField = document.getElementById("chatInput");
     const message = inputField.value.trim();
+    const useInputFilter = document.getElementById("inputFilter").checked;
+    const useOutputFilter = document.getElementById("outputFilter").checked;
     if (!message) return;
 
     // Show user message
@@ -623,29 +538,36 @@
     let blocked = false;
     let guardrailReason = "";
 
-    try {
-      const response = await fetch(endpoints.aws, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: message })
-      });
-      const data = await response.json();
-
-      if (data && data.blocked) {
-        blocked = true;
-        guardrailReason = data.reason || "Sensitive information detected.";
+    if (useInputFilter) {
+      appendMessage("Analyzing with input Guardrail...", "bot-message");
+      try {
+        const response = await fetch(endpoints.aws, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: message })
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error from input guardrail in chat client! Status: ${response.status}`);
+        }
+        const data = await response.json();
+  
+        if (data.pii.detected) {
+          blocked = true;
+          guardrailReason = data.redacted_text || "Sensitive information detected.";
+        }
+      } catch (err) {
+        console.error("Guardrail check failed:", err);
       }
-    } catch (err) {
-      console.error("Guardrail check failed:", err);
-    }
+      if (blocked) {
+        appendMessage("⚠️ " + guardrailReason + " Please re-enter without sensitive info which shows as redacted.", "bot-message");
+        return;
+      }
+    } // useInputFilter condition closing
 
-    if (blocked) {
-      appendMessage("⚠️ " + guardrailReason + " Please re-enter without sensitive info.", "bot-message");
-      return;
-    }
+
 
     // Step 2: Call OpenAI
-    appendMessage("Processing...", "bot-message");
+    appendMessage("Sending user input to LLM...", "bot-message");
     try {
       const key = document.getElementById("apikey").value;
       const model = document.getElementById("model").value;
@@ -664,10 +586,15 @@
       const llmData = await llmResponse.json();
 
       let llmText = llmData?.choices?.[0]?.message?.content || "No response";
+    } catch (error) {
+      appendMessage("❌ Error calling LLM.", "bot-message" + error);
+    }
 
-      // Step 3: Output Guardrail
-      let finalText = llmText;
+    // Step 3: Output Guardrail
+    let finalText = llmText;
+    if (useOutputFilter) {
       try {
+        appendMessage("Updating LLM response if needed with output Guardrail before showing to the user...", "bot-message");
         const outResponse = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -678,16 +605,14 @@
           finalText = outData.redacted;
         }
       } catch (err) {
-        console.error("Output guardrail failed:", err);
+        console.error("Output guardrail failed in chat client:", err);
       }
-
-      // Replace "Processing..." with real response
-      const chatBody = document.getElementById("chatMessages");
-      chatBody.lastChild.textContent = finalText;
-    } catch (error) {
-      appendMessage("❌ Error calling LLM.", "bot-message");
     }
-  }
+
+    // Replace "Processing or progress status..." with real response
+    const chatBody = document.getElementById("chatMessages");
+    chatBody.lastChild.textContent = finalText;
+  } // sendChat function closure
 
   function appendMessage(text, className) {
     const chatBody = document.getElementById("chatMessages");
