@@ -501,10 +501,14 @@
       let inputData = {};
       if (useInputFilter) {
         resultTabDiv.textContent = "Applying Input Guardrails...";
+        const payload = {
+          text: processedInput,
+          filter_type: "INPUT"
+        };
         const resp = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: processedInput })
+          body: JSON.stringify(payload)
         });
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
@@ -545,10 +549,14 @@
       let outputData = {};
       if (useOutputFilter) {
         resultTabDiv.textContent = "Applying Output Guardrails...";
+        const payload = {
+          text: llmResponse,
+          filter_type: "OUTPUT"
+        };
         const resp = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: llmResponse })
+          body: JSON.stringify(payload)
         });
         if (!resp.ok) {
           throw new Error(`HTTP error! Status: ${resp.status}`);
@@ -633,10 +641,14 @@
     if (useInputFilter) {
       appendMessage("Analyzing with input Guardrail...", "bot-message");
       try {
+        const payload = {
+          text: message,
+          filter_type: "INPUT",   // can also be "OUTPUT"
+        };
         const response = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: message })
+          body: JSON.stringify(payload)
         });
         if (!response.ok) {
           throw new Error(`HTTP error from input guardrail in chat client! Status: ${response.status}`);
@@ -692,11 +704,18 @@
     if (useOutputFilter) {
       try {
         appendMessage("Updating LLM response if needed with output Guardrail before showing to the user...", "bot-message");
+
+        const payload = {
+          text: llmText,
+          filter_type: "OUTPUT",   // can also be "OUTPUT"
+          checkOutput: true
+        };
         const outResponse = await fetch(endpoints.aws, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: llmText, checkOutput: true })
+          body: JSON.stringify(payload)
         });
+
         const outData = await outResponse.json();
         if (outData?.redacted_text) {
           finalText = outData.redacted_text;
