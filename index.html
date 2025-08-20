@@ -514,7 +514,7 @@
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
         inputData = await resp.json();
-        processedInput = inputData.redacted_text || processedInput;
+        processedInput = inputData.guardrail_filtered_text || processedInput;
       }
 
       // Step 2: Call OpenAI
@@ -562,7 +562,7 @@
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
         outputData = await resp.json();
-        llmResponse = outputData.redacted_text || llmResponse;
+        llmResponse = outputData.guardrail_filtered_text || llmResponse;
       }
 
       // --- User View ---
@@ -657,7 +657,7 @@
   
         if (data.pii.detected) {
           blocked = true;
-          guardrailReason = data.redacted_text || "Sensitive information detected.";
+          guardrailReason = data.guardrail_filtered_text || "Sensitive information detected.";
         }
       } catch (err) {
         console.error("Guardrail check failed:", err);
@@ -717,8 +717,8 @@
         });
 
         const outData = await outResponse.json();
-        if (outData?.redacted_text) {
-          finalText = outData.redacted_text;
+        if (outData?.guardrail_filtered_text) {
+          finalText = outData.guardrail_filtered_text;
         }
       } catch (err) {
         console.error("Output guardrail failed in chat client:", err);
