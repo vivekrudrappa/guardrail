@@ -412,16 +412,158 @@
   </header>
 
   <main>
+    <h1>Why AI Guardrails Matter</h1>
+    <p class="subtitle">Understanding the Critical Importance of AI Safety and Compliance</p>
+    <p>
+      As AI adoption accelerates across industries, ensuring trust, compliance, and responsible AI use becomes critical. 
+      Guardrails act as safety nets, reducing risks of misinformation, sensitive data exposure, 
+      reputational harm, and regulatory non-compliance.
+    </p>
+
     <section>
-      <h2>Why AI Guardrails Matter</h2>
-      <p>
-        As AI adoption accelerates, ensuring trust, compliance, and responsible AI use becomes critical. 
-        Guardrails act as safety nets, reducing risks of misinformation, sensitive data exposure, 
-        reputational harm, and regulatory non-compliance.
-      </p>
+      <h2>The Stakes Are Higher Than Ever</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>73% of Executives</h3>
+          <p>cite AI risk management as their top priority for 2025, according to recent enterprise surveys.</p>
+          <div class="actions">Source: Enterprise AI Risk Management Survey 2024</div>
+        </div>
+        <div class="card">
+          <h3>$6.2M Average Cost</h3>
+          <p>of AI-related data breaches, significantly higher than traditional data security incidents.</p>
+          <div class="actions">Source: IBM Cost of Data Breach Report 2024</div>
+        </div>
+        <div class="card">
+          <h3>89% of Consumers</h3>
+          <p>want AI transparency and expect companies to be accountable for AI-driven decisions.</p>
+          <div class="actions">Source: Consumer Trust in AI Report 2024</div>
+        </div>
+      </div>
     </section>
 
-    <h2>Supported Guardrail Types & Capabilities</h2>
+    <section>
+      <h2>Critical Risks Without Proper Guardrails</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>🛡️ Data Privacy Violations</h3>
+          <p>Accidental exposure of sensitive customer information through AI model outputs or training data leakage.</p>
+        </div>
+        <div class="card">
+          <h3>⚖️ Regulatory Non-Compliance</h3>
+          <p>Failure to meet GDPR, HIPAA, SOX, or emerging AI governance requirements leading to hefty fines.</p>
+        </div>
+        <div class="card">
+          <h3>📈 Reputational Damage</h3>
+          <p>Public relations disasters from biased AI outputs or inappropriate content generation.</p>
+        </div>
+        <div class="card">
+          <h3>🎯 Biased Decision Making</h3>
+          <p>Discriminatory outcomes in hiring, lending, or customer service leading to lawsuits.</p>
+        </div>
+        <div class="card">
+          <h3>💰 Financial Losses</h3>
+          <p>Direct costs from regulatory fines, legal settlements, and lost customer trust.</p>
+        </div>
+        <div class="card">
+          <h3>🚨 Security Breaches</h3>
+          <p>Prompt injection attacks and adversarial inputs compromising system integrity.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Real-World Industry Impact</h2>
+      
+      <div class="grid">
+        <div class="card">
+          <h3>🏥 Healthcare</h3>
+          <p><strong>Risk Without Guardrails:</strong> An AI diagnostic tool recommends treatment based on biased training data, leading to misdiagnosis for underrepresented patient groups. Patient data is inadvertently exposed through AI model outputs.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Bias detection prevents discriminatory recommendations, data masking protects patient privacy, and compliance checks ensure HIPAA adherence. Clinical validation gates ensure safe deployment.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🏦 Financial Services</h3>
+          <p><strong>Risk Without Guardrails:</strong> AI loan approval system exhibits racial bias, leading to regulatory fines and discrimination lawsuits. Customer financial data leaks through model inference attacks.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Fairness metrics prevent discriminatory lending, differential privacy protects customer data, and explainability features ensure regulatory compliance with fair lending laws.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🏭 Manufacturing</h3>
+          <p><strong>Risk Without Guardrails:</strong> AI-controlled production line makes dangerous adjustments due to adversarial inputs, causing equipment damage and safety hazards. Proprietary manufacturing data is exposed.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Input validation detects anomalies, safety constraints prevent dangerous operations, and data governance protects intellectual property while maintaining operational efficiency.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🛒 E-commerce & Retail</h3>
+          <p><strong>Risk Without Guardrails:</strong> AI recommendation engine promotes harmful products, chatbots share competitor pricing, and dynamic pricing algorithms enable price discrimination leading to customer backlash.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Content filtering prevents harmful recommendations, information barriers protect competitive data, and fairness controls ensure ethical pricing while maximizing customer satisfaction.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📚 Education</h3>
+          <p><strong>Risk Without Guardrails:</strong> AI tutoring system provides incorrect information, assessment tools exhibit bias against certain student groups, and student data is misused for commercial purposes.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Fact-checking prevents misinformation, bias detection ensures fair assessments, and privacy controls protect student data in compliance with FERPA and COPPA regulations.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🚗 Automotive</h3>
+          <p><strong>Risk Without Guardrails:</strong> Autonomous vehicle AI makes unsafe decisions in edge cases, predictive maintenance systems provide false alerts causing unnecessary costs, and vehicle data is compromised.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Safety validation prevents dangerous maneuvers, uncertainty quantification improves maintenance predictions, and secure data handling protects driver privacy and vehicle security.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>⚖️ Legal Services</h3>
+          <p><strong>Risk Without Guardrails:</strong> AI legal research tools cite non-existent cases ("hallucinations"), contract analysis misses critical clauses, and confidential client information is exposed through model outputs.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Citation verification prevents false legal precedents, accuracy thresholds ensure reliable analysis, and attorney-client privilege protection maintains confidentiality and professional standards.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📺 Media & Entertainment</h3>
+          <p><strong>Risk Without Guardrails:</strong> AI content generation creates deepfakes for misinformation, recommendation algorithms promote extremist content, and copyrighted material is inappropriately used in generated content.</p>
+          <div class="note">
+            <strong>✅ With AI Guardrails:</strong> Authenticity verification prevents deepfake abuse, content moderation filters harmful material, and copyright protection ensures legal compliance while fostering creative innovation.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>The Business Case for AI Guardrails</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>🔒 Trust & Compliance</h3>
+          <p>Build customer confidence and meet regulatory requirements from day one, avoiding costly retrofitting and compliance gaps.</p>
+        </div>
+        <div class="card">
+          <h3>⚡ Faster Deployment</h3>
+          <p>Accelerate AI project timelines with built-in safety measures that prevent delays from risk assessments and security reviews.</p>
+        </div>
+        <div class="card">
+          <h3>💡 Innovation Enablement</h3>
+          <p>Enable bold AI initiatives by providing the safety foundation that allows teams to innovate with confidence.</p>
+        </div>
+        <div class="card">
+          <h3>📊 Measurable ROI</h3>
+          <p>Demonstrate clear return on investment through reduced incidents, faster compliance, and increased customer trust metrics.</p>
+        </div>
+      </div>
+    </section>
+
+    <h1>Supported Guardrail Types & Capabilities</h1>
 
     <!-- OLD VIEW DETAILS section>
       <h2>Types of Guardrails</h2>
