@@ -567,9 +567,9 @@
 
       // --- User View ---
       document.getElementById("originalText").value = inputText;
-      document.getElementById("inputFilterStatus").innerText = useInputFilter ? "Yes" : "No";
+      document.getElementById("inputFilterStatus").innerText = useInputFilter ? "Yes Input Filter Applied" : "No Input Filter NOT Applied";
       document.getElementById("filteredInput").value = processedInput ? processedInput : "N/A";
-      document.getElementById("outputFilterStatus").innerText = useOutputFilter ? "Yes" : "No";
+      document.getElementById("outputFilterStatus").innerText = useOutputFilter ? "Yes Ouput Filter Applied" : "No Output Filter NOT Applied";
       document.getElementById("finalOutput").value = llmResponse;
 
       // --- Developer View ---
