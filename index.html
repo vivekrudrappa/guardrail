@@ -7,9 +7,19 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
   <title>Astra AI Guardrail Prototype</title>
   <style>
-
+    h2 {
+        color: #232f3e;
+        border-bottom: 3px solid #ff9900;
+        padding-bottom: 10px;
+        margin-top: 40px;
+    }
     /* new added styles */
-    
+    .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 40px;
+        font-style: italic;
+    }
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -394,7 +404,7 @@
 <body>
   <header>
     <h1>Astra AI Guardrail Prototype</h1>
-    <h4>Feather light guardrail solutions at your door steps</h4>
+    <p class="subtitle">Feather light guardrail solutions at your door steps</p>
     <p>
       AI Guardrails help ensure that AI systems behave safely, responsibly, and in alignment with 
       business and ethical standards. This prototype demonstrates real-time input/output scanning 
@@ -414,7 +424,7 @@
 
     <h2>Supported Guardrail Types & Capabilities</h2>
 
-    <!--section>
+    <!-- OLD VIEW DETAILS section>
       <h2>Types of Guardrails</h2>
       <div class="grid">
         <div class="card"><h3>PII & Sensitive Info</h3><p>Detects personal or confidential data such as SSNs, emails, or financial info.</p></div>
@@ -432,7 +442,7 @@
   </section-->
 
     <div class="note">
-        <strong>Note:</strong> This list reflects the actual capabilities available in AWS Bedrock Guardrails as of 2024. Each guardrail can be configured with different strength levels and actions (NONE, BLOCK, MASK).
+        <strong>Note:</strong> This list reflects the actual capabilities available as of 2024. Each guardrail can be configured with different strength levels and actions (NONE, BLOCK, MASK).
     </div>
   
     <section>
@@ -570,7 +580,7 @@
     </section>
 
     <section>
-      <h2>Demo options for AI Guardrails</h2>
+      <h2>Demo configs for AI Guardrails</h2>
       <p>
         Choose the options below. Depending on your configuration, your input and/or LLM output will be filtered 
         by Guardrail services before or after going to the LLM (OpenAI). 
