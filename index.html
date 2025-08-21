@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
   <title>Astra AI Guardrail Prototype</title>
   <style>
@@ -379,6 +380,109 @@
     }
     */
     /* Chat modal old styling end */
+
+    /* dashboard styles */
+        .dashboard-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .dashboard-header {
+      background: linear-gradient(135deg, #2c3e50, #4ca1af);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      margin: -20px -20px 20px -20px;
+    }
+    
+    .dashboard-iframe {
+      width: 100%;
+      height: 800px;
+      border: 1px solid #e1e8ed;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+    
+    .loading-spinner {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+    
+    .dashboard-controls {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e1e8ed;
+    }
+    
+    .refresh-btn {
+      background-color: #4ca1af;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    .refresh-btn:hover {
+      background-color: #357f8a;
+    }
+    
+    .fullscreen-btn {
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .fullscreen-btn:hover {
+      background-color: #1a252f;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #28a745;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    .nav-tabs .nav-link {
+      color: #2c3e50;
+      border: none;
+      background: none;
+      padding: 12px 24px;
+      margin-right: 8px;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link:hover {
+      background: #f8f9fa;
+      color: #4ca1af;
+    }
+    
+    .nav-tabs .nav-link.active {
+      background: #4ca1af;
+      color: white;
+      border-color: #4ca1af;
+    }
 
   </style>
 </head>
@@ -780,6 +884,140 @@
           </div>
         <!-- Tab View closure -->
         </div>
+
+          <div class="container-fluid">
+            <!-- Tab Navigation -->
+            <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dash-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
+              </li>
+            </ul>
+        
+            <!-- Tab Content -->
+            <div class="tab-content" id="mainTabContent">
+              <!-- Overview Tab -->
+              <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <div class="dashboard-container">
+                  <div class="dashboard-header">
+                    <h3><i class="fas fa-chart-line"></i> Astra AI Guardrail Overview</h3>
+                    <p>Real-time monitoring and analytics for your AI guardrail system</p>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="card text-center">
+                        <div class="card-body">
+                          <h5 class="card-title">Total Requests</h5>
+                          <h2 class="text-primary">1,247</h2>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="card text-center">
+                        <div class="card-body">
+                          <h5 class="card-title">Blocked Threats</h5>
+                          <h2 class="text-danger">23</h2>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="card text-center">
+                        <div class="card-body">
+                          <h5 class="card-title">System Uptime</h5>
+                          <h2 class="text-success">99.9%</h2>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+        
+              <!-- Dashboard Tab with CloudWatch -->
+              <div class="tab-pane fade" id="dashboard" role="tabpanel">
+                <div class="dashboard-container">
+                  <div class="dashboard-header">
+                    <h3>
+                      <span class="status-indicator"></span>
+                      Live CloudWatch Dashboard - Astra AI Guardrail Metrics
+                    </h3>
+                    <p>Real-time AWS CloudWatch metrics and monitoring</p>
+                  </div>
+                  
+                  <!-- Dashboard Controls -->
+                  <div class="dashboard-controls">
+                    <button class="refresh-btn" onclick="refreshDashboard()">
+                      🔄 Refresh Dashboard
+                    </button>
+                    <button class="fullscreen-btn" onclick="openFullscreen()">
+                      🔍 Open in New Window
+                    </button>
+                    <span style="float: right; color: #666; font-size: 0.9em;">
+                      Last updated: <span id="lastUpdated">Loading...</span>
+                    </span>
+                  </div>
+        
+                  <!-- CloudWatch Dashboard Iframe -->
+                  <div style="position: relative;">
+                    <iframe 
+                      id="cloudwatchDashboard"
+                      class="dashboard-iframe"
+                      src="https://cloudwatch.amazonaws.com/dashboard.html?dashboard=Astra_AI_Guardrail_Dashboard_Demo&context=eyJSIjoidXMtZWFzdC0xIiwiRCI6ImN3LWRiLTMzMDkyNzUzOTc4NyIsIlUiOiJ1cy1lYXN0LTFfNnJndzhOSmQzIiwiQyI6IjNmazJuZXJ2ODAwcW8zaGI3NjA1N2ZpdTRzIiwiSSI6InVzLWVhc3QtMTpjNTNlMjhmMy0xOGU1LTQ0ZjQtYTVjYi0yYmIyN2Y4YWM4ODUiLCJNIjoiUHVibGljIn0="
+                      frameborder="0"
+                      allowfullscreen
+                      title="Astra AI Guardrail CloudWatch Dashboard">
+                    </iframe>
+                    
+                    <!-- Loading overlay -->
+                    <div id="loadingOverlay" class="loading-spinner" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(248,249,250,0.9); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p class="mt-3">Loading CloudWatch Dashboard...</p>
+                    </div>
+                  </div>
+        
+                  <!-- Dashboard Info -->
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="card">
+                        <div class="card-header bg-primary text-white">
+                          📊 Dashboard Features
+                        </div>
+                        <div class="card-body">
+                          <ul class="list-unstyled">
+                            <li>✅ Real-time guardrail metrics</li>
+                            <li>✅ Request volume monitoring</li>
+                            <li>✅ Threat detection analytics</li>
+                            <li>✅ Performance insights</li>
+                            <li>✅ Cost optimization data</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card">
+                        <div class="card-header bg-success text-white">
+                          🔧 Dashboard Controls
+                        </div>
+                        <div class="card-body">
+                          <ul class="list-unstyled">
+                            <li>🔄 Auto-refresh every 5 minutes</li>
+                            <li>📅 Customizable time ranges</li>
+                            <li>🔍 Zoom and pan capabilities</li>
+                            <li>📱 Mobile-responsive design</li>
+                            <li>📊 Export and sharing options</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <!-- New tab closure -->
+          </div>
        <!-- Results section closure -->
       </section>
     <!-- AI prototype with config section closure -->
@@ -1026,6 +1264,7 @@
       document.getElementById("jsonOutput").value = JSON.stringify(mergedData, null, 2);
 
       // --- Simulated Backend Results (replace with actual AWS capability to plot charts for below via AWS API call) ---
+      // https://cloudwatch.amazonaws.com/dashboard.html?dashboard=Astra_AI_Guardrail_Dashboard_Demo&context=eyJSIjoidXMtZWFzdC0xIiwiRCI6ImN3LWRiLTMzMDkyNzUzOTc4NyIsIlUiOiJ1cy1lYXN0LTFfNnJndzhOSmQzIiwiQyI6IjNmazJuZXJ2ODAwcW8zaGI3NjA1N2ZpdTRzIiwiSSI6InVzLWVhc3QtMTpjNTNlMjhmMy0xOGU1LTQ0ZjQtYTVjYi0yYmIyN2Y4YWM4ODUiLCJNIjoiUHVibGljIn0=
       const simulatedResponse = {
         piiDetected: 3,
         sensitiveDetected: 1,
@@ -1190,6 +1429,57 @@
   }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Update timestamp and dash board script
+    function updateTimestamp() {
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+    }
+
+    // Refresh dashboard
+    function refreshDashboard() {
+      const iframe = document.getElementById('cloudwatchDashboard');
+      const overlay = document.getElementById('loadingOverlay');
+      
+      // Show loading overlay
+      overlay.style.display = 'flex';
+      
+      // Refresh iframe
+      iframe.src = iframe.src;
+      
+      // Hide overlay after a delay
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        updateTimestamp();
+      }, 2000);
+    }
+
+    // Open dashboard in new window
+    function openFullscreen() {
+      const dashboardUrl = "https://cloudwatch.amazonaws.com/dashboard.html?dashboard=Astra_AI_Guardrail_Dashboard_Demo&context=eyJSIjoidXMtZWFzdC0xIiwiRCI6ImN3LWRiLTMzMDkyNzUzOTc4NyIsIlUiOiJ1cy1lYXN0LTFfNnJndzhOSmQzIiwiQyI6IjNmazJuZXJ2ODAwcW8zaGI3NjA1N2ZpdTRzIiwiSSI6InVzLWVhc3QtMTpjNTNlMjhmMy0xOGU1LTQ0ZjQtYTVjYi0yYmIyN2Y4YWM4ODUiLCJNIjoiUHVibGljIn0=";
+      window.open(dashboardUrl, '_blank', 'width=1200,height=800');
+    }
+
+    // Handle iframe load
+    document.getElementById('cloudwatchDashboard').onload = function() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+      updateTimestamp();
+    };
+
+    // Auto-refresh every 5 minutes
+    setInterval(refreshDashboard, 5 * 60 * 1000);
+
+    // Initial timestamp
+    updateTimestamp();
+
+    // Handle tab switching
+    document.addEventListener('DOMContentLoaded', function() {
+      const dashTab = document.getElementById('dash-tab');
+      dashTab.addEventListener('shown.bs.tab', function() {
+        // Optional: Refresh dashboard when tab is shown
+        updateTimestamp();
+      });
+    });
+  </script>
+
 </body>
 </html>
