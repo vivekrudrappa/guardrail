@@ -7,6 +7,101 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
   <title>Astra AI Guardrail Prototype</title>
   <style>
+
+    /* new added styles */
+    
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .card {
+        border: 1px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 20px;
+        background: #fff;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: #ff9900;
+    }
+    
+    .card h3 {
+        color: #232f3e;
+        margin: 0 0 12px 0;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .card p {
+        color: #555;
+        margin: 0 0 10px 0;
+        font-size: 0.95em;
+    }
+    
+    .card .actions {
+        font-size: 0.85em;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7em;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-left: auto;
+    }
+    
+    .badge.content-filter { background: #e3f2fd; color: #1976d2; }
+    .badge.pii { background: #f3e5f5; color: #7b1fa2; }
+    .badge.custom { background: #e8f5e8; color: #388e3c; }
+    .badge.prompt { background: #fff3e0; color: #f57c00; }
+    .badge.contextual { background: #fce4ec; color: #c2185b; }
+    
+    .icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .icon.hate { background: #ffebee; border: 2px solid #f44336; }
+    .icon.violence { background: #fff3e0; border: 2px solid #ff9800; }
+    .icon.sexual { background: #fce4ec; border: 2px solid #e91e63; }
+    .icon.misconduct { background: #f3e5f5; border: 2px solid #9c27b0; }
+    .icon.pii { background: #e3f2fd; border: 2px solid #2196f3; }
+    .icon.custom { background: #e8f5e8; border: 2px solid #4caf50; }
+    .icon.prompt { background: #fff8e1; border: 2px solid #ffc107; }
+    .icon.contextual { background: #e0f2f1; border: 2px solid #009688; }
+    
+    .note {
+        background: #f0f8ff;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+    }
+    
+    .strength-indicator {
+        font-size: 0.8em;
+        margin-top: 8px;
+        padding: 4px 8px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    /* new added styles end */
     body {
       font-family: "Segoe UI", Roboto, Arial, sans-serif;
       margin: 0;
@@ -48,23 +143,7 @@
       color: #2c3e50;
       margin-bottom: 10px;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 15px;
-    }
-    .card {
-      background: #fdfdfd;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    }
-    .card h3 {
-      margin-top: 0;
-      color: #4ca1af;
-      font-size: 1.1rem;
-    }
+
     label {
       font-weight: bold;
       margin-top: 15px;
@@ -333,7 +412,9 @@
       </p>
     </section>
 
-    <section>
+    <h2>Supported Guardrail Types & Capabilities</h2>
+
+    <!--section>
       <h2>Types of Guardrails</h2>
       <div class="grid">
         <div class="card"><h3>PII & Sensitive Info</h3><p>Detects personal or confidential data such as SSNs, emails, or financial info.</p></div>
@@ -348,13 +429,151 @@
         <div class="card"><h3>Toxicity & Harm</h3><p>Detects hate speech, violence, or harmful content.</p></div>
         <div class="card"><h3>Bias & Fairness</h3><p>Checks for biased language or discriminatory output.</p></div>
       </div>
+  </section-->
+
+    <div class="note">
+        <strong>Note:</strong> This list reflects the actual capabilities available in AWS Bedrock Guardrails as of 2024. Each guardrail can be configured with different strength levels and actions (NONE, BLOCK, MASK).
+    </div>
+  
+    <section>
+        <h2>Content Filters - Harmful Categories</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><span class="icon hate"></span>Hate Speech Filter <span class="badge content-filter">Content Policy</span></h3>
+                <p>Detects and filters hate speech, discrimination, and prejudiced language targeting individuals or groups.</p>
+                <div class="actions">Actions: NONE | BLOCK</div>
+                <div class="strength-indicator">Configurable Strength: LOW | MEDIUM | HIGH</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon violence"></span>Violence Filter <span class="badge content-filter">Content Policy</span></h3>
+                <p>Identifies violent content, threats, or descriptions of harmful physical actions.</p>
+                <div class="actions">Actions: NONE | BLOCK</div>
+                <div class="strength-indicator">Configurable Strength: LOW | MEDIUM | HIGH</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon sexual"></span>Sexual Content Filter <span class="badge content-filter">Content Policy</span></h3>
+                <p>Blocks inappropriate sexual content, explicit material, or adult themes.</p>
+                <div class="actions">Actions: NONE | BLOCK</div>
+                <div class="strength-indicator">Configurable Strength: LOW | MEDIUM | HIGH</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon misconduct"></span>Misconduct Filter <span class="badge content-filter">Content Policy</span></h3>
+                <p>Prevents content that promotes illegal activities, fraud, or unethical behavior.</p>
+                <div class="actions">Actions: NONE | BLOCK</div>
+                <div class="strength-indicator">Configurable Strength: LOW | MEDIUM | HIGH</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon violence"></span>Insults Filter <span class="badge content-filter">Content Policy</span></h3>
+                <p>Detects personal attacks, insults, and offensive language directed at individuals.</p>
+                <div class="actions">Actions: NONE | BLOCK</div>
+                <div class="strength-indicator">Configurable Strength: LOW | MEDIUM | HIGH</div>
+            </div>
+        </div>
+    </section>
+  
+    <section>
+        <h2>PII & Sensitive Information Protection</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><span class="icon pii"></span>PII Detection (31 Types) <span class="badge pii">Sensitive Info</span></h3>
+                <p>Comprehensive detection of personally identifiable information including names, emails, phone numbers, SSNs, addresses, credit cards, and more.</p>
+                <div class="actions">Actions: BLOCK | MASK | DETECT (no action)</div>
+                <div class="strength-indicator">Supports all major PII categories with individual configuration</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon custom"></span>Custom Regex Patterns <span class="badge custom">Custom Rules</span></h3>
+                <p>Define custom regular expressions to detect business-specific sensitive data patterns.</p>
+                <div class="actions">Actions: BLOCK | MASK | DETECT</div>
+                <div class="strength-indicator">Fully customizable pattern matching</div>
+            </div>
+        </div>
+    </section>
+  
+    <section>
+        <h2>Word & Topic Filtering</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><span class="icon custom"></span>Profanity Filter <span class="badge custom">Word Filters</span></h3>
+                <p>Built-in profanity detection with support for custom word and phrase lists.</p>
+                <div class="actions">Actions: BLOCK | MASK</div>
+                <div class="strength-indicator">Customizable with your own word lists</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon custom"></span>Denied Topics <span class="badge custom">Topic Control</span></h3>
+                <p>Block specific topics or subject areas from being discussed or generated.</p>
+                <div class="actions">Actions: BLOCK</div>
+                <div class="strength-indicator">Topic-level filtering with configurable tiers</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon custom"></span>Custom Word Filters <span class="badge custom">Word Lists</span></h3>
+                <p>Add your own custom words, phrases, or terms to be filtered or blocked.</p>
+                <div class="actions">Actions: BLOCK | MASK</div>
+                <div class="strength-indicator">Fully customizable vocabulary control</div>
+            </div>
+        </div>
+    </section>
+  
+    <section>
+        <h2>Advanced Protection</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><span class="icon prompt"></span>Prompt Attack Protection <span class="badge prompt">Prompt Safety</span></h3>
+                <p>Detects and blocks prompt injection attacks, jailbreaking attempts, and adversarial inputs designed to bypass AI safety measures.</p>
+                <div class="actions">Actions: BLOCK</div>
+                <div class="strength-indicator">Advanced prompt attack detection</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon contextual"></span>Contextual Grounding Checks <span class="badge contextual">Contextual</span></h3>
+                <p>Ensures responses are grounded in provided context and checks for relevance to the input query.</p>
+                <div class="actions">Grounding & Relevance Validation</div>
+                <div class="strength-indicator">Context adherence and relevance scoring</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon custom"></span>Automated Reasoning Check <span class="badge contextual">AI Reasoning</span></h3>
+                <p>Validates the logical reasoning and consistency of AI-generated responses.</p>
+                <div class="actions">Reasoning validation and consistency checks</div>
+                <div class="strength-indicator">Automated logical validation</div>
+            </div>
+        </div>
+    </section>
+  
+    <section>
+        <h2>Configuration Options</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><span class="icon custom"></span>Content Filter Tiers <span class="badge custom">Configuration</span></h3>
+                <p>Configurable sensitivity levels for all content filters with LOW, MEDIUM, and HIGH strength settings.</p>
+                <div class="actions">Granular control over filter sensitivity</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon custom"></span>Blocked Messaging <span class="badge custom">User Experience</span></h3>
+                <p>Customize the messages shown to users when content is blocked or filtered.</p>
+                <div class="actions">Personalized user-facing messaging</div>
+            </div>
+            
+            <div class="card">
+                <h3><span class="icon custom"></span>Separate Input/Output Control <span class="badge custom">Directional</span></h3>
+                <p>Configure different guardrail behaviors for user inputs (prompts) versus AI outputs (responses).</p>
+                <div class="actions">Independent prompt and response filtering</div>
+            </div>
+        </div>
     </section>
 
     <section>
-      <h2>Options for AI Guardrails</h2>
+      <h2>Demo options for AI Guardrails</h2>
       <p>
         Choose the options below. Depending on your configuration, your input and/or LLM output will be filtered 
-        by AWS Guardrail services before or after going to the LLM (OpenAI). 
+        by Guardrail services before or after going to the LLM (OpenAI). 
       </p>
       <label for="apikey">🔑 Enter Open API Key </label>
       <input type="password" id="apikey" placeholder="sk-..." style="width:100%; padding:10px;" />
