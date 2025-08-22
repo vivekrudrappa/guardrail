@@ -871,26 +871,12 @@
             <textarea id="jsonOutput" class="form-control" readonly></textarea>
           </div>
     
-          <!-- Dashboard View -->
-          <div class="tab-pane fade" id="dashboard" role="tabpanel">
-            <div class="row">
-              <div class="col-md-6">
-                <canvas id="piiChart"></canvas>
-              </div>
-              <div class="col-md-6">
-                <ul class="list-group" id="summaryList"></ul>
-              </div>
-            </div>
-          </div>
-        <!-- Tab View closure -->
+        <!-- Results Tab View closure -->
         </div>
 
           <div class="container-fluid">
             <!-- Tab Navigation -->
             <ul class="nav nav-tabs" id="mainTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
-              </li>
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="dash-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
               </li>
@@ -898,41 +884,6 @@
         
             <!-- Tab Content -->
             <div class="tab-content" id="mainTabContent">
-              <!-- Overview Tab -->
-              <div class="tab-pane fade show active" id="overview" role="tabpanel">
-                <div class="dashboard-container">
-                  <div class="dashboard-header">
-                    <h3><i class="fas fa-chart-line"></i> Astra AI Guardrail Overview</h3>
-                    <p>Real-time monitoring and analytics for your AI guardrail system</p>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-4">
-                      <div class="card text-center">
-                        <div class="card-body">
-                          <h5 class="card-title">Total Requests</h5>
-                          <h2 class="text-primary">1,247</h2>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="card text-center">
-                        <div class="card-body">
-                          <h5 class="card-title">Blocked Threats</h5>
-                          <h2 class="text-danger">23</h2>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="card text-center">
-                        <div class="card-body">
-                          <h5 class="card-title">System Uptime</h5>
-                          <h2 class="text-success">99.9%</h2>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
         
               <!-- Dashboard Tab with CloudWatch -->
               <div class="tab-pane fade" id="dashboard" role="tabpanel">
@@ -1263,37 +1214,6 @@
       const mergedData = { inputData, outputData };
       document.getElementById("jsonOutput").value = JSON.stringify(mergedData, null, 2);
 
-      // --- Simulated Backend Results (replace with actual AWS capability to plot charts for below via AWS API call) ---
-      // https://cloudwatch.amazonaws.com/dashboard.html?dashboard=Astra_AI_Guardrail_Dashboard_Demo&context=eyJSIjoidXMtZWFzdC0xIiwiRCI6ImN3LWRiLTMzMDkyNzUzOTc4NyIsIlUiOiJ1cy1lYXN0LTFfNnJndzhOSmQzIiwiQyI6IjNmazJuZXJ2ODAwcW8zaGI3NjA1N2ZpdTRzIiwiSSI6InVzLWVhc3QtMTpjNTNlMjhmMy0xOGU1LTQ0ZjQtYTVjYi0yYmIyN2Y4YWM4ODUiLCJNIjoiUHVibGljIn0=
-      const simulatedResponse = {
-        piiDetected: 3,
-        sensitiveDetected: 1,
-        awsResponse: {
-          piiEntities: ["Phone", "Email", "Name"],
-          toxicity: "low",
-          sentiment: "negative"
-        }
-      };
-        // --- Dashboard ---
-      const ctx = document.getElementById('piiChart');
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['PII Detected', 'Sensitive Data'],
-          datasets: [{
-            label: 'Counts',
-            data: [simulatedResponse.piiDetected, simulatedResponse.sensitiveDetected]
-          }]
-        }
-      });
-    
-      const summary = document.getElementById("summaryList");
-      summary.innerHTML = `
-        <li class="list-group-item">PII Detected: ${simulatedResponse.piiDetected}</li>
-        <li class="list-group-item">Sensitive Data: ${simulatedResponse.sensitiveDetected}</li>
-        <li class="list-group-item">Toxicity: ${simulatedResponse.awsResponse.toxicity}</li>
-        <li class="list-group-item">Sentiment: ${simulatedResponse.awsResponse.sentiment}</li>
-      `;
 
     // checkText function try block
     } catch (error) {
