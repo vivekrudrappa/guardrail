@@ -922,13 +922,13 @@
           <!-- Mermaid Diagram -->
           <div id="mermaid-diagram">
             <div class="mermaid">
-              graph TD
-                A["👤 User Input<br/>Business Query<br/>Any Channel"] --> B{"🔧 Input Filter<br/>Enabled?"}
+              graph LR
+                A["👤 User Input<br/>Business Query to GenAI"] --> B{"🔧 Input Filter<br/>Enabled?"}
                 
-                B -->|"✅ YES"| C["🛡️ Input Guardrails<br/>PII Detection<br/>Threat Blocking<br/>Policy Check"]
+                B -->|"✅ YES"| C["🛡️ Input Guardrails<br/>PII Detection<br/>Harmful Filter Blocking"]
                 B -->|"❌ NO"| D["⚡ Direct Pass<br/>Faster Processing"]
                 
-                C --> E["🧠 AI Model<br/>GPT/Claude/etc<br/>Generate Response"]
+                C --> E["🧠 GenAI Model<br/>GPT/Claude/Gemini/etc<br/>Generate Response"]
                 D --> E
                 
                 E --> F{"🔧 Output Filter<br/>Enabled?"}
@@ -939,7 +939,7 @@
                 G --> I["✨ Secure Output<br/>Compliant<br/>Business Ready<br/>Risk-Free"]
                 H --> I
                 
-                I --> J["💼 Executive Value<br/>89% Faster Deployment<br/>$2.3M Risk Mitigation<br/>100% Audit Ready"]
+                I --> J["💼 Executive Value<br/>89% Faster Deployment<br/>$2.3M Risk Mitigation<br/>100% Audit Ready with Dashboards"]
                 
                 classDef userInput fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
                 classDef decision fill:#fce4ec,stroke:#c2185b,stroke-width:2px  
@@ -962,10 +962,10 @@
             <h3>⚠️ Diagram Loading Issue</h3>
             <p>The interactive diagram couldn't load. Here's the process flow:</p>
             <ol style="text-align: left; display: inline-block; margin-top: 20px;">
-              <li><strong>User Input:</strong> Business users submit queries through any channel</li>
-              <li><strong>Input Guardrails (Optional):</strong> Screen for PII, threats, and policy violations</li>
-              <li><strong>AI Processing:</strong> Generate intelligent responses using GPT/Claude/etc</li>
-              <li><strong>Output Guardrails (Optional):</strong> Final quality and compliance check</li>
+              <li><strong>User Input:</strong> Business users submit queries</li>
+              <li><strong>Input Guardrails (Optional):</strong> Screen for PII, Harmful filters, and policy violations</li>
+              <li><strong>AI Processing:</strong> Generate intelligent responses using GPT/Claude/Gemini/etc</li>
+              <li><strong>Output Guardrails (Optional):</strong> Screen for PII, Harmful filters, and policy violations</li>
               <li><strong>Secure Output:</strong> Deliver safe, compliant, business-ready results</li>
             </ol>
           </div>
@@ -979,7 +979,7 @@
               <span><strong>Guardrails:</strong> Security & compliance filters</span>
             </div>
             <div class="legend-item legend-ai">
-              <span><strong>AI Processing:</strong> Intelligent response generation</span>
+              <span><strong>AI Processing:</strong> Intelligent LLM response generation</span>
             </div>
             <div class="legend-item legend-output">
               <span><strong>Output:</strong> Safe, compliant results</span>
@@ -1308,10 +1308,6 @@
   };
 
   async function checkText() {
-    // Step 0: Clear previous results before starting
-    // document.getElementById("resultText").value = "";      // User View output
-    // document.getElementById("jsonOutput").value = "";      // Developer View JSON
-    // document.getElementById("dashboardContent").innerHTML = ""; // Dashboard content
 
     const inputText = document.getElementById('userInput').value;
     const resultTabOrgDiv = document.getElementById('originalText');
@@ -1321,7 +1317,7 @@
     const key = document.getElementById("apikey").value;
     const model = document.getElementById("model").value;
 
-    // Clear ALL previous results before starting
+    // Clear ALL previous results before starting. At present not working as expected.
     // resultTabOrgDiv.value = "";
     // resultTabFilterDiv.value = "";
     // resultTabFinalDiv.value = "";
