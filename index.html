@@ -501,7 +501,7 @@
     /* diagram styles */
     .diagram-container {
       background: white;
-      padding: 30px;
+      padding: 10px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       max-width: 1200px;
@@ -510,7 +510,7 @@
     
     .diagram-header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 10px;
     }
     
     .diagram-title {
@@ -529,18 +529,18 @@
     }
     
     #mermaid-diagram {
-      min-height: 600px;
+      min-height: 500px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
     
     .legend {
-      margin-top: 30px;
+      margin-top: 20px;
       display: flex;
       justify-content: space-around;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 10px;
     }
     
     .legend-item {
@@ -910,19 +910,16 @@
         <p>
           Enter text below, toggle/select options above, and click <b>Check</b>. 
           The system sends your input to a guardrail service based on input/output filter selection, which evaluates it against 
-          multiple scanning rules both things going into LLM and response coming out of LLM. Shows the results in real-time.
+          multiple scanning rules both things going into LLM and response coming out of LLM. Shows the results in real-time. 
+          Here is the visual diagram on how this demo works.
         </p>
         <!-- Mermaid diagram Start -->
         <div class="diagram-container">
-          <div class="diagram-header">
-            <h1 class="diagram-title">🛡️ Astra AI Guardrail Process Flow</h1>
-            <p class="diagram-subtitle">Executive Overview - Secure AI Processing Pipeline</p>
-          </div>
           
           <!-- Mermaid Diagram -->
           <div id="mermaid-diagram">
             <div class="mermaid">
-              graph LR
+              graph TD
                 A["👤 User Input<br/>Business Query to GenAI"] --> B{"🔧 Input Filter<br/>Enabled?"}
                 
                 B -->|"✅ YES"| C["🛡️ Input Guardrails<br/>PII Detection<br/>Harmful Filter Blocking"]
