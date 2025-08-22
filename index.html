@@ -1327,9 +1327,9 @@
     // resultTabFinalDiv.value = "";
     // resultTabJsonDiv.value = "";
 
-    resultTabDiv.textContent = "Processing...";
+    resultTabOrgDiv.textContent = "Processing...";
     if (!key) {
-      resultTabDiv.textContent = "Please enter the Open AI LLM API Key (password) above key box and retry";
+      resultTabOrgDiv.textContent = "Please enter the Open AI LLM API Key (password) above key box and retry";
       return;
     }
 
@@ -1344,7 +1344,7 @@
       // Step 1: Apply input guardrails
       let inputData = {};
       if (useInputFilter) {
-        resultTabDiv.textContent = "Applying Input Guardrails...";
+        resultTabOrgDiv.textContent = "Applying Input Guardrails...";
         const payload = {
           text: processedInput,
           filter_type: "INPUT"
@@ -1363,7 +1363,7 @@
 
       // Step 2: Call OpenAI
       let llmResponse = "No response from LLM.";
-      resultTabDiv.textContent = "Sending info to Generative AI LLM...";
+      resultTabOrgDiv.textContent = "Sending info to Generative AI LLM...";
 
       const respLLM = await fetch(endpoints.openai, {
         method: "POST",
@@ -1389,7 +1389,7 @@
       // Step 3: Apply output guardrails
       let outputData = {};
       if (useOutputFilter) {
-        resultTabDiv.textContent = "Applying Output Guardrails...";
+        resultTabOrgDiv.textContent = "Applying Output Guardrails...";
         const payload = {
           text: llmResponse,
           filter_type: "OUTPUT"
@@ -1421,7 +1421,7 @@
     // checkText function try block
     } catch (error) {
       console.error("Error calling API via UI:", error);
-      resultTabDiv.textContent = "❌ Error: " + error.message;
+      resultTabOrgDiv.textContent = "❌ Error: " + error.message;
     }
   // checkText function closure
   }
