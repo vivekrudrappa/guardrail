@@ -6,6 +6,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+  <!-- Mermaid.js library call -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
   <title>Astra AI Guardrail Prototype</title>
   
   <style>
@@ -841,9 +843,64 @@
           The system sends your input to a guardrail service based on input/output filter selection, which evaluates it against 
           multiple scanning rules both things going into LLM and response coming out of LLM. Shows the results in real-time.
         </p>
+
+        <!-- Add this section where you want the diagram to appear -->
+        <section>
+          
+          <!-- Mermaid Diagram Container -->
+          <div class="mermaid-container" style="text-align: center; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div class="mermaid">
+              <!-- Mermaid code -->
+              graph TD
+              %% Define styles for different types of nodes
+              classDef userInput fill:#e1f5fe,stroke:#0277bd,stroke-width:3px,color:#000
+              classDef guardrail fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
+              classDef aiModel fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000
+              classDef decision fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+              classDef output fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
+              classDef benefit fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#000
+          
+              %% Main Flow
+              A[👤 User Input<br/>📝 Business Query<br/>🌐 Any Channel] --> B{🔧 Input Filter<br/>Enabled?}
+              
+              B -->|✅ YES| C[🛡️ Input Guardrails<br/>🔍 PII Detection<br/>🚫 Threat Blocking<br/>📋 Policy Check]
+              B -->|❌ NO| D[⚡ Direct Pass<br/>🚀 Faster Processing<br/>⚠️ Higher Risk]
+              
+              C --> E[🧠 AI Model Processing<br/>🤖 GPT/Claude/etc<br/>💡 Generate Response]
+              D --> E
+              
+              E --> F{🔧 Output Filter<br/>Enabled?}
+              
+              F -->|✅ YES| G[🔒 Output Guardrails<br/>✅ Quality Check<br/>🛡️ Brand Protection<br/>📊 Audit Logging]
+              F -->|❌ NO| H[⚡ Direct Output<br/>🚀 Maximum Speed<br/>⚠️ Minimal Filtering]
+              
+              G --> I[✨ Secure Output<br/>📋 Compliant<br/>🎯 Business Ready<br/>🔒 Risk-Free]
+              H --> I
+              
+              %% Business Value Boxes
+              I --> J[💼 Executive Value<br/>89% Faster Deployment<br/>$2.3M Risk Mitigation<br/>100% Audit Ready]
+              
+              %% Side Benefits
+              C -.-> K[🔒 Security Benefits<br/>• PII Protection<br/>• Prompt Injection Prevention<br/>• Data Loss Prevention]
+              
+              G -.-> L[📈 Business Benefits<br/>• Brand Consistency<br/>• Regulatory Compliance<br/>• Audit Trail Creation]
+              
+              E -.-> M[🚀 Performance Benefits<br/>• Multi-Model Support<br/>• Scalable Architecture<br/>• Real-Time Processing]
+          
+              %% Apply styles
+              class A userInput
+              class B,F decision
+              class C,G guardrail
+              class D,H benefit
+              class E aiModel
+              class I,J output
+              class K,L,M benefit
+            </div>
+          </div>
+        </section>
   
         <label for="userInput">Enter text to check:</label>
-        <textarea id="userInput" placeholder="Type something here... like mentioning person name, date of birth, address"></textarea><br>
+        <textarea id="userInput" placeholder="Type something here that you ask for a ChatGpt... like mentioning person name, date of birth, address"></textarea><br>
   
         <button onclick="checkText()">Check</button>
   
@@ -1125,6 +1182,16 @@
     © 2025 Astra NextGen Technologies, LLC. | Building Trustworthy AI
   </footer>
 
+<script>
+  mermaid.initialize({ 
+    startOnLoad: true,
+    theme: 'default',
+    flowchart: {
+      useMaxWidth: true,
+      htmlLabels: true
+    }
+  });
+</script>
 <script>
   const endpoints = {
     aws: "https://9r2j9zq0yd.execute-api.us-east-2.amazonaws.com/prod/aiGuardrailPrototype",
