@@ -883,28 +883,6 @@
         </div>
     </section>
 
-    <section>
-      <h1>Demo Configs for AI Guardrails</h1>
-      <p>
-        Choose the options below. Depending on your configuration, your input and/or LLM output will be filtered 
-        by Guardrail services before or after going to the LLM (OpenAI). 
-      </p>
-      <label for="apikey">🔑 Enter Open API Key </label>
-      <input type="password" id="apikey" placeholder="sk-..." style="width:100%; padding:10px;" />
-      <label for="model">⚙️ Select Open AI GPT Model</label>
-      <select id="model">
-        <option value="gpt-4o-mini">gpt-4o-mini (fast, cheap)</option>
-        <option value="gpt-4o">gpt-4o</option>
-        <option value="gpt-3.5-turbo" selected>gpt-3.5-turbo</option>
-      </select>
-
-      <div class="config-panel">
-        <h3>Configuration</h3>
-        <label><input type="checkbox" id="inputFilter"> Enable Input Guardrails</label>
-        <label><input type="checkbox" id="outputFilter"> Enable Output Guardrails</label>
-      </div>
-    </section>
-
       <section>
         <h2>How This Demo Works?</h2>
         <p>
@@ -985,12 +963,34 @@
         </div>
         <!-- Mermaid diagram end -->
 
+        <!-- <pre id="result">Awaiting input...</pre> -->
+      </section>
+
+      <section>
+        <h1>Demo Configs for AI Guardrails</h1>
+        <p>
+          Choose the options below. Depending on your configuration, your input and/or LLM output will be filtered 
+          by Guardrail services before or after going to the LLM (OpenAI). 
+        </p>
+        <label for="apikey">🔑 Enter Open API Key </label>
+        <input type="password" id="apikey" placeholder="sk-..." style="width:100%; padding:10px;" />
+        <label for="model">⚙️ Select Open AI GPT Model</label>
+        <select id="model">
+          <option value="gpt-4o-mini">gpt-4o-mini (fast, cheap)</option>
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="gpt-3.5-turbo" selected>gpt-3.5-turbo</option>  
+        </select>
+  
+        <div class="config-panel">
+          <h3>Configuration</h3>
+          <label><input type="checkbox" id="inputFilter"> Enable Input Guardrails</label>
+          <label><input type="checkbox" id="outputFilter"> Enable Output Guardrails</label>
+        </div>
+        
         <label for="userInput">Enter text to check:</label>
         <textarea id="userInput" placeholder="Type something here that you ask for a ChatGpt... like mentioning person name, date of birth, address"></textarea><br>
   
         <button onclick="checkText()">Check</button>
-  
-        <!-- <pre id="result">Awaiting input...</pre> -->
       </section>
 
       <section>
