@@ -1138,11 +1138,24 @@
     // document.getElementById("dashboardContent").innerHTML = ""; // Dashboard content
 
     const inputText = document.getElementById('userInput').value;
-    const resultTabDiv = document.getElementById('originalText');
+    const resultTabOrgDiv = document.getElementById('originalText');
+    const resultTabFilterDiv = document.getElementById('filteredInput');
+    const resultTabFinalDiv = document.getElementById('finalOutput');
+    const resultTabJsonDiv = document.getElementById('jsonOutput');
     const key = document.getElementById("apikey").value;
     const model = document.getElementById("model").value;
 
+    // Clear ALL previous results before starting
+    resultTabOrgDiv.value = "";
+    resultTabFilterDiv.value = "";
+    resultTabFinalDiv.value = "";
+    resultTabJsonDiv.value = "";
+
     resultTabDiv.textContent = "Processing...";
+    if (!key) {
+      resultTabDiv.textContent = "Please enter the Open AI LLM API Key (password) above key box and retry";
+      return;
+    }
 
     if (!inputText) return;
 
@@ -1175,10 +1188,7 @@
       // Step 2: Call OpenAI
       let llmResponse = "No response from LLM.";
       resultTabDiv.textContent = "Sending info to Generative AI LLM...";
-      if (!key) {
-        resultTabDiv.textContent = "Please enter the Open AI LLM API Key (password) above key box to continue...";
-        return;
-      }
+
       const respLLM = await fetch(endpoints.openai, {
         method: "POST",
         headers: { 
@@ -1259,6 +1269,13 @@
     appendMessage(message, "user-message");
     inputField.value = "";
 
+    const key = document.getElementById("apikey").value;
+    const model = document.getElementById("model").value;
+    if (!key) {
+      appendMessage("Please enter the Open AI LLM API Key (password) and retry", "bot-message");
+      return;
+    }
+
     // Step 1: Input Guardrail
     let blocked = false;
     let guardrailReason = "";
@@ -1297,12 +1314,6 @@
 
     // Step 2: Call OpenAI
     appendMessage("Sending user input to LLM...", "bot-message");
-    const key = document.getElementById("apikey").value;
-    const model = document.getElementById("model").value;
-    if (!key) {
-      appendMessage("Please enter the Open AI LLM API Key (password)", "bot-message");
-      return;
-    }
     
     let llmText = "Default no response";
     try {
