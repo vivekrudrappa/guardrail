@@ -1089,7 +1089,7 @@
         <!-- AI Policy Upload Section -->
         <div class="config-section">
           <h3>📄 AI Policy Analysis</h3>
-          <p style="margin-bottom: 15px; color: #666;">Upload your company's AI policy or generic policy document to get personalized AWS Bedrock Guardrail recommendations and integration guidance.</p>
+          <p style="margin-bottom: 15px; color: #666;">Upload your company's AI policy or generic policy document to get personalized AI Guardrail recommendations and integration guidance.</p>
           
           <div class="file-upload-area" id="fileUploadArea">
             <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
@@ -1176,7 +1176,7 @@
                       <span class="status-indicator"></span>
                       Live CloudWatch Dashboard - Astra AI Guardrail Metrics
                     </h3>
-                    <p>Real-time AWS CloudWatch metrics and monitoring</p>
+                    <p>Real-time CloudWatch metrics and monitoring</p>
                   </div>
                   
                   <!-- Dashboard Controls -->
@@ -1720,8 +1720,8 @@
     });
   </script>
 
-    <script>
-    // script for AI policy document processing and display results
+  <script>
+    // AI plociy upload script
 
     let uploadedPolicyContent = '';
     
@@ -1767,8 +1767,8 @@
       const analyzeBtn = document.getElementById('analyzePolicyBtn');
 
       // Validate file
-      if (file.size > 10 * 1024 * 1024) {
-        showError('File size must be less than 10MB');
+      if (file.size > 2 * 1024 * 1024) {
+        showError('File size must be less than 2MB');
         return;
       }
 
@@ -1835,43 +1835,68 @@
       `;
 
       try {
+        // Truncate policy content if too long to avoid token limits
+        const maxPolicyLength = 8000; // Reserve tokens for prompt and response
+        let policyContent = uploadedPolicyContent;
+        if (policyContent.length > maxPolicyLength) {
+          policyContent = policyContent.substring(0, maxPolicyLength) + "\n\n[Content truncated due to length...]";
+        }
+
         // Create the prompt for policy analysis
-        const prompt = `
-          As an AI governance expert, please analyze the following company AI policy document and provide:
+        const prompt = `As an AI governance expert, please analyze the following company AI policy document and provide:
 
-          1. **AWS Bedrock Guardrail Recommendations**: Which specific guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
+                        1. **AWS Bedrock Guardrail Recommendations**: Which specific guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
+                        
+                        2. **Configuration Suggestions**: Specific configuration recommendations for each recommended guardrail service
+                        
+                        3. **Integration Points**: Where in the company's systems/workflow these guardrails should be integrated based on the policy requirements
+                        
+                        4. **Risk Assessment**: Key AI risks identified in the policy and how the recommended guardrails address them
+                        
+                        5. **Compliance Alignment**: How the recommended setup ensures compliance with the stated policy
+                        
+                        Please format your response in clear sections with specific, actionable recommendations.
+                        
+                        **Company AI Policy Document:**
+                        ${policyContent}`;
 
-          2. **Configuration Suggestions**: Specific configuration recommendations for each recommended guardrail service
+        // Validate API key format
+        if (!key.startsWith('sk-')) {
+          throw new Error('Invalid API key format. OpenAI API keys should start with "sk-"');
+        }
 
-          3. **Integration Points**: Where in the company's systems/workflow these guardrails should be integrated based on the policy requirements
+        // Call OpenAI API with better error handling
+        const requestBody = {
+          model: model,
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 3000,
+          temperature: 0.3
+        };
 
-          4. **Risk Assessment**: Key AI risks identified in the policy and how the recommended guardrails address them
+        console.log('Sending request to OpenAI:', { model, promptLength: prompt.length });
 
-          5. **Compliance Alignment**: How the recommended setup ensures compliance with the stated policy
-
-          Please format your response in clear sections with specific, actionable recommendations.
-
-          **Company AI Policy Document:**
-          ${uploadedPolicyContent}
-        `;
-
-        // Call OpenAI API
         const response = await fetch(endpoints.openai, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${key}`
           },
-          body: JSON.stringify({
-            model: model,
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 4000,
-            temperature: 0.3
-          })
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
-          throw new Error(`OpenAI API error: ${response.status}`);
+          const errorText = await response.text();
+          console.error('OpenAI API Error:', response.status, errorText);
+          
+          let errorMessage;
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error?.message || `API Error ${response.status}`;
+          } catch (e) {
+            errorMessage = `API Error ${response.status}: ${errorText}`;
+          }
+          
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();
@@ -1882,11 +1907,34 @@
 
       } catch (error) {
         console.error('Policy analysis failed:', error);
+        
+        let errorMessage = error.message;
+        let troubleshootingTips = '';
+        
+        if (error.message.includes('Invalid API key')) {
+          troubleshootingTips = '<p><strong>💡 Tips:</strong> Make sure your API key starts with "sk-" and is correctly copied from OpenAI.</p>';
+        } else if (error.message.includes('insufficient_quota') || error.message.includes('quota')) {
+          troubleshootingTips = '<p><strong>💡 Tips:</strong> Your OpenAI account may have insufficient credits. Please check your OpenAI billing.</p>';
+        } else if (error.message.includes('rate_limit')) {
+          troubleshootingTips = '<p><strong>💡 Tips:</strong> Rate limit exceeded. Please wait a moment and try again.</p>';
+        } else if (error.message.includes('model_not_found')) {
+          troubleshootingTips = '<p><strong>💡 Tips:</strong> The selected model may not be available. Try switching to GPT-3.5 Turbo.</p>';
+        }
+        
         resultDiv.className = 'analysis-result error';
         resultDiv.innerHTML = `
           <h4>❌ Analysis Failed</h4>
-          <p>Error analyzing policy document: ${error.message}</p>
-          <p>Please check your API key and try again.</p>
+          <p><strong>Error:</strong> ${errorMessage}</p>
+          ${troubleshootingTips}
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; color: #666;">🔍 Technical Details</summary>
+            <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 12px; margin-top: 8px; overflow-x: auto;">${JSON.stringify({
+              model: model,
+              promptLength: prompt?.length || 0,
+              policyLength: uploadedPolicyContent?.length || 0,
+              timestamp: new Date().toISOString()
+            }, null, 2)}</pre>
+          </details>
         `;
       } finally {
         analyzeBtn.disabled = false;
