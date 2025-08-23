@@ -1047,6 +1047,9 @@
           <!-- Legend -->
           <div class="legend">
             <div class="legend-item legend-user">
+              <span><strong>Upload Policy Document(Optional):</strong> Get AI Guardrail Recommendations </span>
+            </div>
+            <div class="legend-item legend-user">
               <span><strong>User Input:</strong> Entry points & queries</span>
             </div>
             <div class="legend-item legend-guardrail">
@@ -1087,29 +1090,31 @@
         </div>
 
         <!-- AI Policy Upload Section -->
-        <div class="config-section">
-          <h3>📄 AI Policy Analysis</h3>
-          <p style="margin-bottom: 15px; color: #666;">Upload your company's AI policy or generic policy document to get personalized AI Guardrail recommendations and integration guidance.</p>
-          
-          <div class="file-upload-area" id="fileUploadArea">
-            <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
-            <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Drop your AI policy document here</div>
-            <div style="font-size: 14px; color: #666;">or click to browse files</div>
-            <div style="font-size: 12px; color: #999; margin-top: 8px;">Supported: PDF, DOC, DOCX, TXT (Max: 10MB)</div>
-            <input type="file" id="policyFile" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+        <section>
+          <div class="config-section">
+            <h3>📄 AI Policy Analysis</h3>
+            <p style="margin-bottom: 15px; color: #666;">Upload your company's AI policy or generic policy document to get personalized AI Guardrail recommendations and integration guidance.</p>
+            
+            <div class="file-upload-area" id="fileUploadArea">
+              <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
+              <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Drop your AI policy document here</div>
+              <div style="font-size: 14px; color: #666;">or click to browse files</div>
+              <div style="font-size: 12px; color: #999; margin-top: 8px;">Supported: PDF, DOC, DOCX, TXT (Max: 10MB)</div>
+              <input type="file" id="policyFile" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+            </div>
+            
+            <div id="fileInfo" class="file-info" style="display: none;"></div>
+            
+            <button id="analyzePolicyBtn" class="analyze-btn" disabled onclick="analyzePolicyDocument()">
+              📊 Analyze Policy & Get Recommendations
+            </button>
+            
+            <div id="analysisResult" style="display: none;"></div>
           </div>
-          
-          <div id="fileInfo" class="file-info" style="display: none;"></div>
-          
-          <button id="analyzePolicyBtn" class="analyze-btn" disabled onclick="analyzePolicyDocument()">
-            📊 Analyze Policy & Get Recommendations
-          </button>
-          
-          <div id="analysisResult" style="display: none;"></div>
-        </div>
+        </section>
         <!-- AI Policy Upload Section end-->
         
-        <label for="userInput">Enter text to check LLM response with AI Guardrails PII Masking & Harmful contents blocking:</label>
+        <label for="userInput">Enter text to check real time LLM response going via AI Guardrails PII Masking & Harmful contents blocking:</label>
         <textarea id="userInput" placeholder="Type something here that you ask for a ChatGpt... like mentioning person name, date of birth, address"></textarea><br>
   
         <button onclick="checkText()">Check</button>
@@ -1387,7 +1392,7 @@
   </div>
 
   <footer>
-    © 2025 Astra NextGen Technologies, LLC. | Building Trustworthy AI
+    © 2025 Astra NextGen Technologies, LLC. | www.astranextgen.com | Building Trustworthy AI
   </footer>
 
   <script>
@@ -1845,7 +1850,7 @@
         // Create the prompt for policy analysis
         const prompt = `As an AI governance expert, please analyze the following company AI policy document and provide:
 
-                        1. **AWS Bedrock Guardrail Recommendations**: Which specific guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
+                        1. **AI Guardrail Recommendations**: Which specific AWS Bedrock guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
                         
                         2. **Configuration Suggestions**: Specific configuration recommendations for each recommended guardrail service
                         
@@ -1855,7 +1860,7 @@
                         
                         5. **Compliance Alignment**: How the recommended setup ensures compliance with the stated policy
                         
-                        Please format your response in clear sections with specific, actionable recommendations.
+                        Please format your response in clear sections with specific, actionable recommendations. Actionable recommendations should specific to contact AI experts from Astra NextGen Technologies with email contact@astranextgen.com
                         
                         **Company AI Policy Document:**
                         ${policyContent}`;
@@ -1981,132 +1986,6 @@
       }, 5000);
     }
 
-    // Chat functionality
-    function toggleChatPopup() {
-      const popup = document.getElementById("chatPopup");
-      popup.style.display = popup.style.display === "flex" ? "none" : "flex";
-    }
-
-    async function sendChat() {
-      const inputField = document.getElementById("chatInput");
-      const message = inputField.value.trim();
-      const useInputFilter = document.getElementById("inputFilter").checked;
-      const useOutputFilter = document.getElementById("outputFilter").checked;
-      if (!message) return;
-
-      // Show user message
-      appendMessage(message, "user-message");
-      inputField.value = "";
-
-      const key = document.getElementById("apikey").value;
-      const model = document.getElementById("model").value;
-      if (!key) {
-        appendMessage("Please enter the OpenAI API Key and retry", "bot-message");
-        return;
-      }
-
-      // Step 1: Input Guardrail
-      let blocked = false;
-      let guardrailReason = "";
-
-      if (useInputFilter) {
-        appendMessage("Analyzing with input Guardrail...", "bot-message");
-        try {
-          const payload = {
-            text: message,
-            filter_type: "INPUT",
-          };
-          const response = await fetch(endpoints.aws, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-          if (!response.ok) {
-            throw new Error(`HTTP error from input guardrail! Status: ${response.status}`);
-          }
-          const data = await response.json();
-    
-          if (data.pii.detected) {
-            blocked = true;
-            guardrailReason = data.guardrail_filtered_text || "Sensitive information detected.";
-          }
-        } catch (err) {
-          console.error("Guardrail check failed:", err);
-          appendMessage("⚠️ Guardrail service unavailable, proceeding without input filtering", "bot-message");
-        }
-        if (blocked) {
-          appendMessage("⚠️ " + guardrailReason + " Please re-enter without sensitive info which shows as redacted.", "bot-message");
-          return;
-        }
-      }
-
-      // Step 2: Call OpenAI
-      appendMessage("Sending user input to LLM...", "bot-message");
-      
-      let llmText = "Default no response";
-      try {
-        const llmResponse = await fetch(endpoints.openai, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${key}`
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [{ role: "user", content: message }]
-          })
-        });
-
-        if (!llmResponse.ok) {
-          throw new Error(`OpenAI API error: ${llmResponse.status}`);
-        }
-
-        const llmData = await llmResponse.json();
-        llmText = llmData?.choices?.[0]?.message?.content || "No response";
-      } catch (error) {
-        llmText = `❌ Error calling LLM: ${error.message}`;
-      }
-
-      // Step 3: Output Guardrail
-      let finalText = llmText;
-      if (useOutputFilter) {
-        try {
-          appendMessage("Updating LLM response if needed with output Guardrail before showing to the user...", "bot-message");
-
-          const payload = {
-            text: llmText,
-            filter_type: "OUTPUT",
-            checkOutput: true
-          };
-          const outResponse = await fetch(endpoints.aws, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-
-          if (outResponse.ok) {
-            const outData = await outResponse.json();
-            if (outData?.guardrail_filtered_text) {
-              finalText = outData.guardrail_filtered_text;
-            }
-          }
-        } catch (err) {
-          console.error("Output guardrail failed:", err);
-          appendMessage("⚠️ Output guardrail unavailable, showing unfiltered response", "bot-message");
-        }
-      }
-
-      appendMessage(finalText, "bot-message");
-    }
-
-    function appendMessage(text, className) {
-      const chatBody = document.getElementById("chatMessages");
-      const msg = document.createElement("div");
-      msg.className = "message " + className;
-      msg.textContent = text;
-      chatBody.appendChild(msg);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
 
     // Initialize file upload when page loads
     document.addEventListener('DOMContentLoaded', initializeFileUpload);
