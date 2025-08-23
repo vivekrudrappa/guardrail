@@ -567,6 +567,105 @@
       color: #856404;
     }
     /* diagram styles end */
+
+    /* File upload styles start */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    
+    .file-upload-area {
+      border: 2px dashed #4ca1af;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      background: #f8fcff;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .file-upload-area:hover {
+      background: #f0f8ff;
+      border-color: #357f8a;
+    }
+
+    .file-upload-area.drag-over {
+      background: #e6f3ff;
+      border-color: #2c6e7a;
+    }
+
+    .file-info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e8f5e8;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .analyze-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+
+    .analyze-btn:hover {
+      background: #218838;
+    }
+
+    .analyze-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    .analysis-result {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #4ca1af;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .error {
+      background: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    .success {
+      background: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+    /* File upload styles end */
     
   </style>
 </head>
@@ -982,12 +1081,35 @@
         </select>
   
         <div class="config-panel">
-          <h3>Configuration</h3>
+          <h3> 🔧 Configuration</h3>
           <label><input type="checkbox" id="inputFilter"> Enable Input Guardrails</label>
           <label><input type="checkbox" id="outputFilter"> Enable Output Guardrails</label>
         </div>
+
+        <!-- AI Policy Upload Section -->
+        <div class="config-section">
+          <h3>📄 AI Policy Analysis</h3>
+          <p style="margin-bottom: 15px; color: #666;">Upload your company's AI policy or generic policy document to get personalized AWS Bedrock Guardrail recommendations and integration guidance.</p>
+          
+          <div class="file-upload-area" id="fileUploadArea">
+            <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Drop your AI policy document here</div>
+            <div style="font-size: 14px; color: #666;">or click to browse files</div>
+            <div style="font-size: 12px; color: #999; margin-top: 8px;">Supported: PDF, DOC, DOCX, TXT (Max: 10MB)</div>
+            <input type="file" id="policyFile" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+          </div>
+          
+          <div id="fileInfo" class="file-info" style="display: none;"></div>
+          
+          <button id="analyzePolicyBtn" class="analyze-btn" disabled onclick="analyzePolicyDocument()">
+            📊 Analyze Policy & Get Recommendations
+          </button>
+          
+          <div id="analysisResult" style="display: none;"></div>
+        </div>
+        <!-- AI Policy Upload Section end-->
         
-        <label for="userInput">Enter text to check:</label>
+        <label for="userInput">Enter text to check LLM response with AI Guardrails PII Masking & Harmful contents blocking:</label>
         <textarea id="userInput" placeholder="Type something here that you ask for a ChatGpt... like mentioning person name, date of birth, address"></textarea><br>
   
         <button onclick="checkText()">Check</button>
@@ -1594,6 +1716,361 @@
       dashTab.addEventListener('shown.bs.tab', function() {
         // Optional: Refresh dashboard when tab is shown
         updateTimestamp();
+      });
+    });
+  </script>
+
+    <script>
+    // script for AI policy document processing and display results
+
+    let uploadedPolicyContent = '';
+    
+    // File upload functionality
+    function initializeFileUpload() {
+      const fileUploadArea = document.getElementById('fileUploadArea');
+      const fileInput = document.getElementById('policyFile');
+      const fileInfo = document.getElementById('fileInfo');
+      const analyzeBtn = document.getElementById('analyzePolicyBtn');
+
+      // Click to upload
+      fileUploadArea.addEventListener('click', () => fileInput.click());
+
+      // Drag and drop
+      fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('drag-over');
+      });
+
+      fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('drag-over');
+      });
+
+      fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFileSelection(files[0]);
+        }
+      });
+
+      // File input change
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFileSelection(e.target.files[0]);
+        }
+      });
+    }
+
+    function handleFileSelection(file) {
+      const fileInfo = document.getElementById('fileInfo');
+      const analyzeBtn = document.getElementById('analyzePolicyBtn');
+
+      // Validate file
+      if (file.size > 10 * 1024 * 1024) {
+        showError('File size must be less than 10MB');
+        return;
+      }
+
+      const allowedTypes = ['text/plain', 'application/pdf', 'application/msword', 
+                          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(txt|pdf|doc|docx)$/i)) {
+        showError('Please select a valid document file (PDF, DOC, DOCX, or TXT)');
+        return;
+      }
+
+      // Display file info
+      fileInfo.style.display = 'block';
+      fileInfo.innerHTML = `
+        <strong>📎 Selected File:</strong> ${file.name}<br>
+        <strong>📏 Size:</strong> ${(file.size / 1024).toFixed(1)} KB<br>
+        <strong>📅 Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}
+      `;
+
+      // Read file content
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedPolicyContent = e.target.result;
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '📊 Analyze Policy & Get Recommendations';
+      };
+
+      reader.onerror = function() {
+        showError('Error reading file. Please try again.');
+      };
+
+      // Read as text for now (you might want to add PDF parsing libraries for production)
+      reader.readAsText(file);
+    }
+
+    async function analyzePolicyDocument() {
+      if (!uploadedPolicyContent) {
+        showError('Please upload a policy document first');
+        return;
+      }
+
+      const key = document.getElementById("apikey").value;
+      const model = document.getElementById("model").value;
+      
+      if (!key) {
+        showError("Please enter your OpenAI API Key first");
+        return;
+      }
+
+      const analyzeBtn = document.getElementById('analyzePolicyBtn');
+      const resultDiv = document.getElementById('analysisResult');
+
+      // Show loading state
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = '🔄 Analyzing...';
+      resultDiv.style.display = 'block';
+      resultDiv.className = 'analysis-result loading';
+      resultDiv.innerHTML = `
+        <div class="loading">
+          <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
+          <div>Analyzing your AI policy document...</div>
+          <div style="font-size: 12px; color: #999; margin-top: 5px;">This may take 30-60 seconds</div>
+        </div>
+      `;
+
+      try {
+        // Create the prompt for policy analysis
+        const prompt = `
+          As an AI governance expert, please analyze the following company AI policy document and provide:
+
+          1. **AWS Bedrock Guardrail Recommendations**: Which specific guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
+
+          2. **Configuration Suggestions**: Specific configuration recommendations for each recommended guardrail service
+
+          3. **Integration Points**: Where in the company's systems/workflow these guardrails should be integrated based on the policy requirements
+
+          4. **Risk Assessment**: Key AI risks identified in the policy and how the recommended guardrails address them
+
+          5. **Compliance Alignment**: How the recommended setup ensures compliance with the stated policy
+
+          Please format your response in clear sections with specific, actionable recommendations.
+
+          **Company AI Policy Document:**
+          ${uploadedPolicyContent}
+        `;
+
+        // Call OpenAI API
+        const response = await fetch(endpoints.openai, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${key}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 4000,
+            temperature: 0.3
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`OpenAI API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const analysis = data?.choices?.[0]?.message?.content || "No analysis generated";
+
+        // Display results
+        displayAnalysisResults(analysis);
+
+      } catch (error) {
+        console.error('Policy analysis failed:', error);
+        resultDiv.className = 'analysis-result error';
+        resultDiv.innerHTML = `
+          <h4>❌ Analysis Failed</h4>
+          <p>Error analyzing policy document: ${error.message}</p>
+          <p>Please check your API key and try again.</p>
+        `;
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '📊 Analyze Policy & Get Recommendations';
+      }
+    }
+
+    function displayAnalysisResults(analysis) {
+      const resultDiv = document.getElementById('analysisResult');
+      
+      // Format the analysis text with better styling
+      const formattedAnalysis = analysis
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+
+      resultDiv.className = 'analysis-result success';
+      resultDiv.innerHTML = `
+        <h4>✅ AI Policy Analysis Complete</h4>
+        <div style="margin-top: 15px; line-height: 1.6;">
+          <p>${formattedAnalysis}</p>
+        </div>
+        <div style="margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px; font-size: 14px;">
+          <strong>💡 Next Steps:</strong>
+          <ul style="margin-top: 8px; margin-bottom: 0;">
+            <li>Review the recommended guardrail configurations</li>
+            <li>Consult with your AWS solutions architect for implementation</li>
+            <li>Test the guardrails in a development environment first</li>
+            <li>Monitor and adjust configurations based on your specific use cases</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    function showError(message) {
+      const resultDiv = document.getElementById('analysisResult');
+      resultDiv.style.display = 'block';
+      resultDiv.className = 'analysis-result error';
+      resultDiv.innerHTML = `<h4>❌ Error</h4><p>${message}</p>`;
+      
+      setTimeout(() => {
+        resultDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    // Chat functionality
+    function toggleChatPopup() {
+      const popup = document.getElementById("chatPopup");
+      popup.style.display = popup.style.display === "flex" ? "none" : "flex";
+    }
+
+    async function sendChat() {
+      const inputField = document.getElementById("chatInput");
+      const message = inputField.value.trim();
+      const useInputFilter = document.getElementById("inputFilter").checked;
+      const useOutputFilter = document.getElementById("outputFilter").checked;
+      if (!message) return;
+
+      // Show user message
+      appendMessage(message, "user-message");
+      inputField.value = "";
+
+      const key = document.getElementById("apikey").value;
+      const model = document.getElementById("model").value;
+      if (!key) {
+        appendMessage("Please enter the OpenAI API Key and retry", "bot-message");
+        return;
+      }
+
+      // Step 1: Input Guardrail
+      let blocked = false;
+      let guardrailReason = "";
+
+      if (useInputFilter) {
+        appendMessage("Analyzing with input Guardrail...", "bot-message");
+        try {
+          const payload = {
+            text: message,
+            filter_type: "INPUT",
+          };
+          const response = await fetch(endpoints.aws, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error from input guardrail! Status: ${response.status}`);
+          }
+          const data = await response.json();
+    
+          if (data.pii.detected) {
+            blocked = true;
+            guardrailReason = data.guardrail_filtered_text || "Sensitive information detected.";
+          }
+        } catch (err) {
+          console.error("Guardrail check failed:", err);
+          appendMessage("⚠️ Guardrail service unavailable, proceeding without input filtering", "bot-message");
+        }
+        if (blocked) {
+          appendMessage("⚠️ " + guardrailReason + " Please re-enter without sensitive info which shows as redacted.", "bot-message");
+          return;
+        }
+      }
+
+      // Step 2: Call OpenAI
+      appendMessage("Sending user input to LLM...", "bot-message");
+      
+      let llmText = "Default no response";
+      try {
+        const llmResponse = await fetch(endpoints.openai, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${key}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [{ role: "user", content: message }]
+          })
+        });
+
+        if (!llmResponse.ok) {
+          throw new Error(`OpenAI API error: ${llmResponse.status}`);
+        }
+
+        const llmData = await llmResponse.json();
+        llmText = llmData?.choices?.[0]?.message?.content || "No response";
+      } catch (error) {
+        llmText = `❌ Error calling LLM: ${error.message}`;
+      }
+
+      // Step 3: Output Guardrail
+      let finalText = llmText;
+      if (useOutputFilter) {
+        try {
+          appendMessage("Updating LLM response if needed with output Guardrail before showing to the user...", "bot-message");
+
+          const payload = {
+            text: llmText,
+            filter_type: "OUTPUT",
+            checkOutput: true
+          };
+          const outResponse = await fetch(endpoints.aws, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          if (outResponse.ok) {
+            const outData = await outResponse.json();
+            if (outData?.guardrail_filtered_text) {
+              finalText = outData.guardrail_filtered_text;
+            }
+          }
+        } catch (err) {
+          console.error("Output guardrail failed:", err);
+          appendMessage("⚠️ Output guardrail unavailable, showing unfiltered response", "bot-message");
+        }
+      }
+
+      appendMessage(finalText, "bot-message");
+    }
+
+    function appendMessage(text, className) {
+      const chatBody = document.getElementById("chatMessages");
+      const msg = document.createElement("div");
+      msg.className = "message " + className;
+      msg.textContent = text;
+      chatBody.appendChild(msg);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // Initialize file upload when page loads
+    document.addEventListener('DOMContentLoaded', initializeFileUpload);
+
+    // Allow Enter key in textarea for chat
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatInput = document.getElementById('chatInput');
+      chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendChat();
+        }
       });
     });
   </script>
