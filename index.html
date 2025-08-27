@@ -1251,31 +1251,6 @@
           <label><input type="checkbox" id="inputFilter"> Enable Input Guardrails</label>
           <label><input type="checkbox" id="outputFilter"> Enable Output Guardrails</label>
         </div>
-
-        <!-- AI Policy Upload Section -->
-        <section>
-          <div class="config-section">
-            <h3>📄 AI Policy Analysis</h3>
-            <p style="margin-bottom: 15px; color: #666;">Upload your company's AI policy or generic policy document to get personalized AI Guardrail recommendations and integration guidance.</p>
-            
-            <div class="file-upload-area" id="fileUploadArea">
-              <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
-              <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Drop your AI policy document here</div>
-              <div style="font-size: 14px; color: #666;">or click to browse files</div>
-              <div style="font-size: 12px; color: #999; margin-top: 8px;">Supported: PDF, DOC, DOCX, TXT (Max: 10MB)</div>
-              <input type="file" id="policyFile" accept=".pdf,.doc,.docx,.txt" style="display: none;">
-            </div>
-            
-            <div id="fileInfo" class="file-info" style="display: none;"></div>
-            
-            <button id="analyzePolicyBtn" class="analyze-btn" disabled onclick="analyzePolicyDocument()">
-              📊 Analyze Policy & Get Recommendations
-            </button>
-            
-            <div id="analysisResult" style="display: none;"></div>
-          </div>
-        </section>
-        <!-- AI Policy Upload Section end-->
         
         <label for="userInput">Enter text to check real time LLM response going via AI Guardrails PII Masking & Harmful contents blocking:</label>
         <textarea id="userInput" placeholder="Type something here that you ask for a ChatGpt... like mentioning person name, date of birth, address"></textarea><br>
@@ -1423,6 +1398,31 @@
       </section>
     <!-- AI prototype with config section closure -->
     </section>
+
+    <!-- AI Policy Upload Section -->
+    <section>
+      <div class="config-section">
+        <h3>📄 AI Policy Analysis</h3>
+        <p style="margin-bottom: 15px; color: #666;">Upload your company's AI policy or generic policy document to get personalized AI Guardrail recommendations and integration guidance.</p>
+        
+        <div class="file-upload-area" id="fileUploadArea">
+          <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
+          <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Drop your AI policy document here</div>
+          <div style="font-size: 14px; color: #666;">or click to browse files</div>
+          <div style="font-size: 12px; color: #999; margin-top: 8px;">Supported: PDF, DOC, DOCX, TXT (Max: 10MB)</div>
+          <input type="file" id="policyFile" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+        </div>
+        
+        <div id="fileInfo" class="file-info" style="display: none;"></div>
+        
+        <button id="analyzePolicyBtn" class="analyze-btn" disabled onclick="analyzePolicyDocument()">
+          📊 Analyze Policy & Get Recommendations
+        </button>
+        
+        <div id="analysisResult" style="display: none;"></div>
+      </div>
+    </section>
+    <!-- AI Policy Upload Section end-->
   </main>
 
       <!-- What's Cooking Next Section -->
@@ -1455,6 +1455,12 @@
             <div class="card" style="background: rgba(255,255,255,0.95); border: none; transform: none;">
                 <h3 style="color: #4a5568;">🏛️ AI Governance Framework <span class="badge custom" style="background: #805ad5; color: white;">Enterprise</span></h3>
                 <p style="color: #4a5568;">Complete organizational AI governance accelerator with policy templates, audit trails, and compliance dashboards.</p>
+                <div class="actions" style="color: #718096; font-weight: bold;">⚖️ Enterprise-grade governance</div>
+            </div>
+
+            <div class="card" style="background: rgba(255,255,255,0.95); border: none; transform: none;">
+                <h3 style="color: #4a5568;">🤖 Proactive Threat Intelligence <span class="badge custom" style="background: #805ad5; color: white;">Enterprise</span></h3>
+                <p style="color: #4a5568;">Constantly researching emegring safety concerns and adding custom Guardrails.</p>
                 <div class="actions" style="color: #718096; font-weight: bold;">⚖️ Enterprise-grade governance</div>
             </div>
 
@@ -1558,8 +1564,8 @@
                     <p class="phase-description">Accelerator Foundation with market research and validation</p>
                     <ul class="highlights-list">
                         <li>Market Research & Strategy</li>
-                        <li>Prototype & Demo Development</li>
-                        <li>Initial Stakeholder Feedback</li>
+                        <li>Prototype, Accelerator & Demo Development</li>
+                        <li>Initial Executive Feedback</li>
                         <li>Technical Architecture</li>
                     </ul>
                 </div>
@@ -1575,6 +1581,7 @@
                         <li>Sandbox Integration</li>
                         <li>Beta Testing & Validation</li>
                         <li>User Experience Optimization</li>
+                        <li>Customer feedbacks & Adjust Features Timeline</li>
                     </ul>
                 </div>
 
@@ -1586,7 +1593,7 @@
                     <p class="phase-description">Managed consulting guardrail services</p>
                     <ul class="highlights-list">
                         <li>End-to-end Guardrail Management</li>
-                        <li>AI Policy Development</li>
+                        <li>AI Policy Development Consulting Services</li>
                         <li>Guardrail & Governance Strategy Consulting Services</li>
                     </ul>
                 </div>
@@ -1612,9 +1619,9 @@
                     <div class="phase-status status-upcoming">🚀 Future</div>
                     <p class="phase-description">Advanced features and monitoring</p>
                     <ul class="highlights-list">
-                        <li>AI Policy Analytics</li>
-                        <li>Multi-Cloud Platform</li>
-                        <li>Proactive Threat Intelligence on emerging safety concerns</li>
+                        <li>AI Policy Analytics & Dynamic Gaurdrail Updates Upon Approvals</li>
+                        <li>Multi-Cloud Platform Agnostic to Vendors</li>
+                        <li>Proactive Threat Intelligence on Emerging Safety Concerns</li>
                         <li>Cost Predictions for budgeting & Governance</li>
                         <li>AI Governance Framework</li>
                     </ul>
@@ -2115,23 +2122,45 @@
 
         // Create the prompt for policy analysis
         const prompt = `As an AI governance expert, please analyze the following company AI policy document and provide:
-
-                        1. **AI Guardrail Recommendations**: Which specific AWS Bedrock guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
-                        
-                        2. **Configuration Suggestions**: Specific configuration recommendations for each recommended guardrail service
-                        
-                        3. **Integration Points**: Where in the company's systems/workflow these guardrails should be integrated based on the policy requirements
-                        
-                        4. **Risk Assessment**: Key AI risks identified in the policy and how the recommended guardrails address them
-                        
-                        5. **Compliance Alignment**: How the recommended setup ensures compliance with the stated policy
-                        
-                        Please format your response in clear sections with specific, actionable recommendations. Actionable recommendations should specific to contact AI experts from Astra NextGen Technologies with email contact@astranextgen.com
-                        Do not specify AWS bedrock or AWS or any cloud service providers in your reponse to keep it platform agnostic solution. 
-                        As part of next steps, clearly specify to consult Astra AI solutions architect for implementation.
-                        
-                        **Company AI Policy Document:**
-                        ${policyContent}`;
+                      
+                      1. **AI Guardrail Recommendations**: Which specific guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
+                         - For each recommended guardrail, provide:
+                           * Exact page number and section reference from the document
+                           * Direct quote or specific statement that supports this recommendation
+                           * Clear explanation of how that policy statement leads to this guardrail requirement
+                      
+                      2. **Configuration Suggestions**: Specific configuration recommendations for each recommended guardrail service
+                         - Cite the exact policy language (page number, section) that drives each configuration choice
+                         - Reference specific compliance requirements, risk levels, or operational needs mentioned in the document
+                      
+                      3. **Integration Points**: Where in the company's systems/workflow these guardrails should be integrated based on the policy requirements
+                         - Cite specific sections (page number, paragraph) that describe current systems, workflows, or processes
+                         - Quote relevant text about data handling, user interactions, or system architectures mentioned in the policy
+                      
+                      4. **Risk Assessment**: Key AI risks identified in the policy and how the recommended guardrails address them
+                         - For each identified risk, provide:
+                           * Exact page number and section where the risk is mentioned
+                           * Direct quote of the risk statement from the document
+                           * Explanation of how the recommended guardrail specifically mitigates this documented risk
+                      
+                      5. **Compliance Alignment**: How the recommended setup ensures compliance with the stated policy
+                         - Cite specific compliance requirements (page number, section) from the document
+                         - Quote exact regulatory or internal policy statements that each guardrail addresses
+                         - Reference any audit, monitoring, or reporting requirements mentioned in the policy
+                      
+                      **Citation Format Requirements:**
+                      - Use format: [Page X, Section Y.Z: "Direct quote from document"]
+                      - If summarizing, clearly indicate it's a summary and provide the original text reference
+                      - Include paragraph or subsection identifiers where available
+                      - Ensure every recommendation traces back to specific document content
+                      
+                      Please format your response in clear sections with specific, actionable recommendations. Actionable recommendations should be specific to contact AI experts from Astra NextGen Technologies with email contact@astranextgen.com
+                      
+                      Do not specify AWS bedrock or AWS or cloud service providers in your response to keep it platform agnostic solution. 
+                      As part of next steps, clearly specify to consult Astra AI solutions architect for implementation.
+                      
+                      **Company AI Policy Document:**
+                      ${policyContent}`;
 
         // Validate API key format
         if (!key.startsWith('sk-')) {
