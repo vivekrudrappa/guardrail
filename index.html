@@ -666,6 +666,169 @@
       color: #155724;
     }
     /* File upload styles end */
+
+       /* Launch Phases */
+        .launch-phases-section {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+            padding: 40px 0;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section-header h2 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: #ffd700;
+            border-radius: 2px;
+        }
+        
+        .tagline {
+            color: #e2e8f0;
+            font-size: 1em;
+        }
+        
+        /* Horizontal Timeline Layout */
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .phase-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 280px;
+        }
+        
+        .phase-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+        }
+        
+        .phase-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .phase-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        
+        .phase-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .status-completed { background: #48bb78; color: white; }
+        .status-active { background: #ed8936; color: white; }
+        .status-upcoming { background: #4299e1; color: white; }
+        
+        .phase-description {
+            color: #e2e8f0;
+            font-size: 0.8em;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        
+        .highlights-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .highlights-list li {
+            color: #cbd5e0;
+            font-size: 0.75em;
+            margin-bottom: 5px;
+            padding-left: 12px;
+            position: relative;
+        }
+        
+        .highlights-list li::before {
+            content: '▸';
+            color: #ffd700;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .smart-config {
+            text-align: center;
+            margin-top: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid #ffd700;
+        }
+        
+        .smart-config-text {
+            color: #ffd700;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .phases-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .phase-card {
+                min-height: 320px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .phases-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .phase-card {
+                min-height: auto;
+            }
+        }
     
   </style>
 </head>
@@ -1265,29 +1428,11 @@
       <!-- What's Cooking Next Section -->
     <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 50px;">
         <h2 style="color: white; border-bottom: 3px solid #ffd700; text-align: center; font-size: 2.2em; margin-bottom: 30px;">
-            🚀 What's Cooking Next?
+            What's Cooking Next?
         </h2>
         <p class="subtitle" style="color: #f0f8ff; font-size: 1.2em; text-align: center; margin-bottom: 40px;">
-            Innovation Never Sleeps - Exciting Features Coming Soon!
+            Innovation Never Sleeps - Exciting Things Coming Soon!
         </p>
-        
-        <div class="grid">
-            <div class="card" style="background: rgba(255,255,255,0.95); border: none; transform: none;">
-                <h3 style="color: #4a5568;">🚀 Launch Phases <span class="badge custom" style="background: #ffd700; color: #2d3748;">Smart Config</span></h3>
-                <p style="color: #4a5568;">Three phases of launch. <br>
-                  <strong> Pre-Launch - Accelarator (completed) </strong><br>
-                    Foundational phase establishes the groundwork with Market Research & Strategy, Prototype & Demo, Get initial feedbacks<br>
-                  <strong>Beta-Launch - Customer Onboarding & Improvements</strong> <br>
-                    Customer portal MVP, Integration to customer sandbox environments and Testing <br>
-                  <strong>Services-Launch - Managed-Consulting Guardrail Services</strong> <br>
-                    Free up customer resources and handle end-to-end including Guardrail management, Help develop AI Policies/Guardrails/Governance and related strategy consulting <br>
-                  <strong>Domain-Launch - Strong Domain Specific Template Guardrails</strong> <br>
-                    AI Guardrail configuration control directly to customers, Seamless enterprise intergation points, Based on Beta phase customer domains/industries like healthcare, finance, legal come up with pre-loaded domain specific templates with focused content filters, policies, compliance safety rules, use cases (chatbot, products) based guardrails, domain specific dashboards/reporting <br>
-                  <strong>Features-Launch - New features, Monitoring and Refinement</strong> <br>
-                    AI policy Quarterly Analysis and on approval auto changes in Guardrails, Multi-Cloud platform agnostic services, Proactive Threat Intelligence (Dynamically protect on emerging safety concerns), Cost Predictions based on usage for clear budgeting, AI Governance Framework Configuration, Monitoring, Feedbacks and Improvements. <br>
-                </p>
-                <div class="actions" style="color: #718096; font-weight: bold;">🎯 Easy plug and play setup</div>
-            </div>
           
             <div class="card" style="background: rgba(255,255,255,0.95); border: none; transform: none;">
                 <h3 style="color: #4a5568;">🤖 AI Policy Intelligence <span class="badge custom" style="background: #ffd700; color: #2d3748;">Smart Config</span></h3>
@@ -1391,6 +1536,89 @@
                 <p style="color: #4a5568;">AI-powered document analysis and summarization with sensitive information detection and privacy controls.</p>
                 <div class="actions" style="color: #718096;">📖 Privacy-first document AI</div>
             </div>
+        </div>
+    </section>
+
+      <!-- Launch Phases Section -->
+    <section class="launch-phases-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>🚀 Launch Phases</h2>
+                <p class="tagline">Strategic Roadmap to Market Leadership</p>
+            </div>
+            
+            <div class="phases-grid">
+                <!-- Phase 1 -->
+                <div class="phase-card">
+                    <div class="phase-number">1</div>
+                    <div class="phase-title">Pre-Launch Accelerator</div>
+                    <div class="phase-status status-completed">✅ Completed</div>
+                    <p class="phase-description">Accelerator Foundation with market research and validation</p>
+                    <ul class="highlights-list">
+                        <li>Market Research & Strategy</li>
+                        <li>Prototype & Demo Development</li>
+                        <li>Initial Stakeholder Feedback</li>
+                        <li>Technical Architecture</li>
+                    </ul>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="phase-card">
+                    <div class="phase-number">2</div>
+                    <div class="phase-title">Beta-Launch Onboarding</div>
+                    <div class="phase-status status-active">🔄 Active</div>
+                    <p class="phase-description">Customer onboarding and improvements</p>
+                    <ul class="highlights-list">
+                        <li>Customer Portal MVP</li>
+                        <li>Sandbox Integration</li>
+                        <li>Beta Testing & Validation</li>
+                        <li>User Experience Optimization</li>
+                    </ul>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="phase-card">
+                    <div class="phase-number">3</div>
+                    <div class="phase-title">Services-Launch Consulting</div>
+                    <div class="phase-status status-upcoming">📅 Upcoming</div>
+                    <p class="phase-description">Managed consulting guardrail services</p>
+                    <ul class="highlights-list">
+                        <li>End-to-end Guardrail Management</li>
+                        <li>AI Policy Development</li>
+                        <li>Guardrail & Governance Strategy Consulting Services</li>
+                    </ul>
+                </div>
+
+                <!-- Phase 4 -->
+                <div class="phase-card">
+                    <div class="phase-number">4</div>
+                    <div class="phase-title">Domain-Launch Templates</div>
+                    <div class="phase-status status-upcoming">🎯 Planned</div>
+                    <p class="phase-description">Industry/Domain-Specific Template Guardrails</p>
+                    <ul class="highlights-list">
+                        <li>Healthcare/Finance/Customer-Centric Templates</li>
+                        <li>Enterprise Integration Points based on Domain use cases</li>
+                        <li>Domain Dashboards</li>
+                        <li>Domain Specific Compliance Safety Rules</li>
+                    </ul>
+                </div>
+
+                <!-- Phase 5 -->
+                <div class="phase-card">
+                    <div class="phase-number">5</div>
+                    <div class="phase-title">Features-Launch Advanced</div>
+                    <div class="phase-status status-upcoming">🚀 Future</div>
+                    <p class="phase-description">Advanced features and monitoring</p>
+                    <ul class="highlights-list">
+                        <li>AI Policy Analytics</li>
+                        <li>Multi-Cloud Platform</li>
+                        <li>Proactive Threat Intelligence on emerging safety concerns</li>
+                        <li>Cost Predictions for budgeting & Governance</li>
+                        <li>AI Governance Framework</li>
+                    </ul>
+                </div>
+            </div>
+            
         </div>
     </section>
 
