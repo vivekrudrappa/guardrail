@@ -2121,28 +2121,25 @@
         }
 
         // Create the prompt for policy analysis
-const prompt = `Analyze the provided AI policy document and extract specific guardrail recommendations. Your analysis must be based ONLY on explicit statements found in the document.
+const prompt = `You are an AI AWS bedrock Guardrail expert. Analyze the provided AI policy document and extract specific guardrail recommendations. Your analysis must be based ONLY on explicit statements found in the document.
 
-**CRITICAL INSTRUCTIONS FOR CITATION ACCURACY:**
+**INSTRUCTIONS FOR CITATION ACCURACY:**
 - Only cite text that appears verbatim in the document
 - Use exact quotes with quotation marks
 - If paraphrasing, clearly state "Paraphrased from:" followed by the exact original text
 - Do NOT invent or fabricate any content not present in the document
-- If a specific guardrail type isn't explicitly mentioned, note its absence
 - If page numbers are not able to extract accurately then do not include page number instead add the header or title of the section
 
 **Required Analysis Format:**
 
 1. **AI Guardrail Recommendations**
 Which specific guardrail services should be enabled based on the policy requirements. (example Guardrails like Content Filtering, PII Detection, Sensitive Information Filtering and Other AWS Bedrock Guardrail services supported as of current date):
-- State whether this guardrail is explicitly mentioned or can be inferred
 - Provide the EXACT quote from the document that supports this need
 - Format: [Page X: "Exact quote from document"]
-- If inferring, explain: "While not explicitly stated as '[guardrail name]', the policy states: [exact quote]"
+- If inferring, explain: "While not explicitly stated as '[exact quote]', the policy states: [exact quote]"
 
 2. **Specific Policy Requirements to Address and configuration recommendation for them** 
-Specific configuration recommendations for each recommended AWS bedrock guardrail service
-List exact prohibitions or requirements from the document:
+Provide the specific configuration recommendations for each recommended AWS bedrock guardrail service above:
 - Direct quotes of what is prohibited per the operational needs mentioned in the document
 - Direct quotes of what is required per the operational needs mentioned in the document
 - Format each as: [Page X: "Complete sentence or paragraph as it appears"]
