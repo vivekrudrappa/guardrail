@@ -2114,7 +2114,7 @@
 
       try {
         // Truncate policy content if too long to avoid token limits
-        const maxPolicyLength = 8000; // Reserve tokens for prompt and response
+        const maxPolicyLength = 15000; // Reserve tokens for prompt and response
         let policyContent = uploadedPolicyContent;
         if (policyContent.length > maxPolicyLength) {
           policyContent = policyContent.substring(0, maxPolicyLength) + "\n\n[Content truncated due to length...]";
