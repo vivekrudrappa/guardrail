@@ -2043,49 +2043,6 @@
       });
     }
 
-    /* old copy
-    function handleFileSelection(file) {
-      const fileInfo = document.getElementById('fileInfo');
-      const analyzeBtn = document.getElementById('analyzePolicyBtn');
-
-      // Validate file
-      if (file.size > 2 * 1024 * 1024) {
-        showError('File size must be less than 2MB');
-        return;
-      }
-
-      const allowedTypes = ['text/plain', 'application/pdf', 'application/msword', 
-                          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      
-      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(txt|pdf|doc|docx)$/i)) {
-        showError('Please select a valid document file (PDF, DOC, DOCX, or TXT)');
-        return;
-      }
-
-      // Display file info
-      fileInfo.style.display = 'block';
-      fileInfo.innerHTML = `
-        <strong>📎 Selected File:</strong> ${file.name}<br>
-        <strong>📏 Size:</strong> ${(file.size / 1024).toFixed(1)} KB<br>
-        <strong>📅 Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}
-      `;
-
-      // Read file content
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        uploadedPolicyContent = e.target.result;
-        analyzeBtn.disabled = false;
-        analyzeBtn.textContent = '📊 Analyze Policy & Get Recommendations';
-      };
-
-      reader.onerror = function() {
-        showError('Error reading file. Please try again.');
-      };
-
-      // Read as text for now (you might want to add PDF parsing libraries for production)
-      reader.readAsText(file);
-    } 
-    /* old copy end */
     function handleFileSelection(file) {
       const fileInfo = document.getElementById('fileInfo');
       const analyzeBtn = document.getElementById('analyzePolicyBtn');
@@ -2192,21 +2149,21 @@
          // Create the prompt for policy analysis
         const prompt = `As an AI governance expert, please analyze the following company AI policy document and provide:
                         
-                        AI Guardrail Recommendations: Which specific guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
+                        AI Guardrail Recommendations: Which specific guardrail services should be enabled based on the policy requirements (Example services like Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering and other currently supported AWS bedrock Guardrail services)
                         For each recommended guardrail, provide:
-                        Exact header or title reference from the document
+                        Exact header or title reference (if possible include page number, paragraph) from the document
                         Direct quote or statement that supports this recommendation
                         Clear explanation of how that policy statement leads to this guardrail requirement
                         
-                        Configuration Suggestions: Specific configuration recommendations for each recommended guardrail service
-                        Cite the exact policy language (header or title) that drives each configuration choice
+                        Configuration Suggestions: Specific AWS bedrock guardrail configuration recommendations for each recommended guardrail service
+                        Cite the exact policy language (header or title if possible include page number, paragraph) that drives each configuration choice
                         Reference specific compliance requirements, risk levels, or operational needs mentioned in the document
                         
                         Integration Points: Where in the company's systems/workflow these guardrails should be integrated based on the policy requirements
-                        Cite specific sections (page number, paragraph) that describe current systems, workflows, or processes
+                        Cite specific sections (if possible include page number, paragraph) that describe current systems, workflows, or processes
                         Quote relevant text about data handling, user interactions, or system architectures mentioned in the policy
                         
-                        Risk Assessment: Key AI risks identified in the policy and how the recommended guardrails address them
+                        Risk Assessment: Key AI risks identified in the policy and how the recommended guardrails and configurations address them
                         For each identified risk, provide:
                         Exact page number and section where the risk is mentioned
                         Direct quote of the risk statement from the document
@@ -2219,7 +2176,7 @@
                         
                         Citation Format Requirements:
                         
-                        Use format: [Header or Title: "Direct quote from document"]
+                        Use format: [Header or Title (if possible include page number, section): "Direct quote from document"]
                         If summarizing, clearly indicate it's a summary and provide the original text reference
                         Include paragraph or subsection identifiers where available
                         Ensure every recommendation traces back to specific document content
@@ -2227,7 +2184,7 @@
                         Please format your response in clear sections with specific, actionable recommendations. Actionable recommendations should be specific to contact AI experts from Astra NextGen Technologies with email contact@astranextgen.com
                         
                         Do not specify AWS bedrock or AWS or cloud service providers in your response to keep it platform agnostic solution. 
-                        As part of next steps, clearly specify to consult Astra AI solutions architect for implementation.
+                        As part of next steps, clearly specify to consult Astra AI solutions architect for AI policy development or refinement, AI Governance Stratgy and its implementations.
                         
                         Company AI Policy Document:
                         ${policyContent}`;
