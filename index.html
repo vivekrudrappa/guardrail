@@ -8,6 +8,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
   <!-- Mermaid.js library call -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.4.3/mermaid.min.js"></script>
+  <!-- Add PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
   <title>Astra AI Guardrail Accelerator </title>
   
   <style>
@@ -2040,6 +2043,7 @@
       });
     }
 
+    /* old copy
     function handleFileSelection(file) {
       const fileInfo = document.getElementById('fileInfo');
       const analyzeBtn = document.getElementById('analyzePolicyBtn');
@@ -2080,7 +2084,72 @@
 
       // Read as text for now (you might want to add PDF parsing libraries for production)
       reader.readAsText(file);
+    } 
+    /* old copy end */
+    function handleFileSelection(file) {
+      const fileInfo = document.getElementById('fileInfo');
+      const analyzeBtn = document.getElementById('analyzePolicyBtn');
+    
+      if (file.size > 5 * 1024 * 1024) {
+        showError('File size must be less than 5MB');
+        return;
+      }
+    
+      const allowedTypes = ['text/plain', 'application/pdf',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(txt|pdf|doc|docx)$/i)) {
+        showError('Please select a valid document file (PDF, DOC, DOCX, or TXT)');
+        return;
+      }
+    
+      // Display file info
+      fileInfo.style.display = 'block';
+      fileInfo.innerHTML = `
+        <strong>📎 Selected File:</strong> ${file.name}<br>
+        <strong>📏 Size:</strong> ${(file.size / 1024).toFixed(1)} KB<br>
+        <strong>📅 Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}
+      `;
+    
+      // Special case for PDF
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const typedarray = new Uint8Array(e.target.result);
+    
+          const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+          let textContent = "";
+    
+          for (let i = 0; i < pdf.numPages; i++) {
+            const page = await pdf.getPage(i + 1);
+            const text = await page.getTextContent();
+            text.items.forEach(item => {
+              textContent += item.str + " ";
+            });
+            textContent += "\n\n";
+          }
+    
+          uploadedPolicyContent = textContent;
+          analyzeBtn.disabled = false;
+          analyzeBtn.textContent = '📊 Analyze Policy & Get Recommendations';
+        };
+        reader.readAsArrayBuffer(file);
+        return;
+      }
+    
+      // Fallback for TXT/DOC/DOCX (still as plain text)
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedPolicyContent = e.target.result;
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '📊 Analyze Policy & Get Recommendations';
+      };
+      reader.onerror = function() {
+        showError('Error reading file. Please try again.');
+      };
+      reader.readAsText(file);
     }
+
 
     async function analyzePolicyDocument() {
       if (!uploadedPolicyContent) {
