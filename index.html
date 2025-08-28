@@ -860,6 +860,67 @@
       reputational harm, and regulatory non-compliance.
     </p>
 
+        <header>
+        <h1>AI Guardrails - Executive Overview</h1>
+        <p>Comprehensive Conceptual Diagrams for Business Leaders & Technical Architects</p>
+    </header>
+
+    <!-- Diagram: High-Level AI Guardrails Concept -->
+    <div class="diagram-container">
+        <div class="diagram-header">
+            <h2 class="diagram-title">AI Guardrails - Strategic Overview</h2>
+            <p class="diagram-subtitle">Executive-Level Understanding of AI Safety & Compliance</p>
+        </div>
+        
+        <div class="mermaid-wrapper">
+            <div class="mermaid">
+                graph TB
+                    subgraph "🏢 Business Context"
+                        A["👥 Business Users<br/>Sales, HR, Legal, etc"] 
+                        B["📋 AI Policies<br/>Compliance Requirements<br/>Industry Standards"]
+                        C["💼 Business Applications<br/>ChatGPT, Claude, Custom AI"]
+                    end
+                    
+                    subgraph "🛡️ AI Guardrails Layer"
+                        D["🔍 Input Protection<br/>• PII Detection<br/>• Policy Enforcement<br/>• Threat Prevention"]
+                        E["🎯 Processing Control<br/>• Content Filtering<br/>• Bias Prevention<br/>• Quality Assurance"]
+                        F["✅ Output Validation<br/>• Compliance Check<br/>• Brand Protection<br/>• Risk Mitigation"]
+                    end
+                    
+                    subgraph "📊 Business Outcomes"
+                        G["🔒 Trust & Compliance<br/>GDPR, HIPAA, SOX Ready"]
+                        H["⚡ Faster AI Adoption<br/>95% Faster Deployment"]
+                        I["💰 Risk Reduction<br/>$6M+ Breach Prevention"]
+                        J["📈 Innovation Enablement<br/>Safe AI Experimentation"]
+                    end
+                    
+                    A --> D
+                    B --> E
+                    C --> D
+                    D --> E
+                    E --> F
+                    F --> G
+                    F --> H
+                    F --> I
+                    F --> J
+                    
+                    classDef businessContext fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+                    classDef guardrails fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+                    classDef outcomes fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+                    
+                    class A,B,C businessContext
+                    class D,E,F guardrails
+                    class G,H,I,J outcomes
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item legend-user">Business Context: Users, Policies, Applications</div>
+            <div class="legend-item legend-guardrail">AI Guardrails: Protection & Control Layer</div>
+            <div class="legend-item legend-ai">Business Outcomes: Trust, Speed, Safety, Innovation</div>
+        </div>
+    </div>
+
     <section>
       <h2>The Stakes Are Higher Than Ever</h2>
       <div class="grid">
@@ -1013,6 +1074,72 @@
     <div class="note">
         <strong>Note:</strong> This list reflects the actual capabilities available as of Aug 2025. Each guardrail can be configured with different strength levels and actions (NONE, BLOCK, MASK).
     </div>
+
+      <!-- Diagram 2: Current Guardrail Capabilities -->
+    <div class="diagram-container">
+        <div class="diagram-header">
+            <h2 class="diagram-title">Available Guardrail Capabilities</h2>
+            <p class="diagram-subtitle">Comprehensive Protection Across All AI Interactions</p>
+        </div>
+        
+        <div class="mermaid-wrapper">
+            <div class="mermaid">
+                graph TD
+                    subgraph "🛡️ Content Filters"
+                        A1["🚫 Hate Speech<br/>Discrimination Detection"]
+                        A2["⚔️ Violence<br/>Threat Prevention"]
+                        A3["🔞 Sexual Content<br/>Adult Material Block"]
+                        A4["⚖️ Misconduct<br/>Illegal Activity"]
+                        A5["😤 Insults<br/>Personal Attacks"]
+                    end
+                    
+                    subgraph "🔐 PII & Data Protection"
+                        B1["👤 PII Detection<br/>31 Types Protected<br/>SSN, Email, Phone"]
+                        B2["🔍 Custom Regex<br/>Business-Specific<br/>Pattern Matching"]
+                        B3["🗝️ Secrets Detection<br/>API Keys, Tokens<br/>Credential Protection"]
+                    end
+                    
+                    subgraph "📝 Content Control"
+                        C1["🤬 Profanity Filter<br/>Custom Word Lists<br/>Context-Aware"]
+                        C2["🚯 Denied Topics<br/>Subject Area Control<br/>Business Restrictions"]
+                        C3["📋 Custom Filters<br/>Organization-Specific<br/>Flexible Rules"]
+                    end
+                    
+                    subgraph "🧠 Advanced Protection"
+                        D1["💉 Prompt Injection<br/>Attack Prevention<br/>Adversarial Input Block"]
+                        D2["🎯 Contextual Grounding<br/>Response Relevance<br/>Context Adherence"]
+                        D3["🔬 Reasoning Check<br/>Logical Validation<br/>Consistency Verification"]
+                    end
+                    
+                    E["⚙️ Configurable Actions<br/>BLOCK | MASK | DETECT<br/>LOW | MEDIUM | HIGH"]
+                    
+                    A1 --> E
+                    B1 --> E
+                    C1 --> E
+                    D1 --> E
+                    
+                    classDef contentFilter fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+                    classDef piiProtection fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+                    classDef contentControl fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+                    classDef advancedProtection fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+                    classDef configuration fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+                    
+                    class A1,A2,A3,A4,A5 contentFilter
+                    class B1,B2,B3 piiProtection
+                    class C1,C2,C3 contentControl
+                    class D1,D2,D3 advancedProtection
+                    class E configuration
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item legend-business">Content Filters: Policy Enforcement</div>
+            <div class="legend-item legend-user">PII Protection: Data Privacy</div>
+            <div class="legend-item legend-output">Content Control: Business Rules</div>
+            <div class="legend-item legend-ai">Advanced Protection: AI-Specific Threats</div>
+        </div>
+    </div>
+
   
     <section>
         <h2>Content Filters - Harmful Categories</h2>
