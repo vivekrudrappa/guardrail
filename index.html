@@ -1241,7 +1241,7 @@
         <input type="password" id="apikey" placeholder="sk-..." style="width:100%; padding:10px;" />
         <label for="model">⚙️ Select Open AI GPT Model</label>
         <select id="model">
-          <option value="gpt-4o-mini">gpt-4o-mini (fast, cheap)</option>
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
           <option value="gpt-4o">gpt-4o</option>
           <option value="gpt-3.5-turbo" selected>gpt-3.5-turbo</option>  
         </select>
@@ -2121,46 +2121,61 @@
         }
 
         // Create the prompt for policy analysis
-        const prompt = `As an AI governance expert, please analyze the following company AI policy document and provide:
-                      
-                      1. **AI Guardrail Recommendations**: Which specific guardrail services should be enabled based on the policy requirements (Content Filtering, PII Detection, Topic Filtering, Word Filtering, Sensitive Information Filtering, etc.)
-                         - For each recommended guardrail, provide:
-                           * Exact page number and section reference from the document
-                           * Direct quote or specific statement that supports this recommendation
-                           * Clear explanation of how that policy statement leads to this guardrail requirement
-                      
-                      2. **Configuration Suggestions**: Specific configuration recommendations for each recommended guardrail service
-                         - Cite the exact policy language (page number, section) that drives each configuration choice
-                         - Reference specific compliance requirements, risk levels, or operational needs mentioned in the document
-                      
-                      3. **Integration Points**: Where in the company's systems/workflow these guardrails should be integrated based on the policy requirements
-                         - Cite specific sections (page number, paragraph) that describe current systems, workflows, or processes
-                         - Quote relevant text about data handling, user interactions, or system architectures mentioned in the policy
-                      
-                      4. **Risk Assessment**: Key AI risks identified in the policy and how the recommended guardrails address them
-                         - For each identified risk, provide:
-                           * Exact page number and section where the risk is mentioned
-                           * Direct quote of the risk statement from the document
-                           * Explanation of how the recommended guardrail specifically mitigates this documented risk
-                      
-                      5. **Compliance Alignment**: How the recommended setup ensures compliance with the stated policy
-                         - Cite specific compliance requirements (page number, section) from the document
-                         - Quote exact regulatory or internal policy statements that each guardrail addresses
-                         - Reference any audit, monitoring, or reporting requirements mentioned in the policy
-                      
-                      **Citation Format Requirements:**
-                      - Use format: [Page X, Section Y.Z: "Direct quote from document"]
-                      - If summarizing, clearly indicate it's a summary and provide the original text reference
-                      - Include paragraph or subsection identifiers where available
-                      - Ensure every recommendation traces back to specific document content
-                      
-                      Please format your response in clear sections with specific, actionable recommendations. Actionable recommendations should be specific to contact AI experts from Astra NextGen Technologies with email contact@astranextgen.com
-                      
-                      Do not specify AWS bedrock or AWS or cloud service providers in your response to keep it platform agnostic solution. 
-                      As part of next steps, clearly specify to consult Astra AI solutions architect for implementation.
-                      
-                      **Company AI Policy Document:**
-                      ${policyContent}`;
+const prompt = `Analyze the provided AI policy document and extract specific guardrail recommendations. Your analysis must be based ONLY on explicit statements found in the document.
+
+**CRITICAL INSTRUCTIONS FOR CITATION ACCURACY:**
+- Only cite text that appears verbatim in the document
+- Use exact quotes with quotation marks
+- If paraphrasing, clearly state "Paraphrased from:" followed by the exact original text
+- Do NOT invent or fabricate any content not present in the document
+- If a specific guardrail type isn't explicitly mentioned, note its absence
+- If page numbers are not able to extract accurately then do not include page number instead add the header or title of the section
+
+**Required Analysis Format:**
+
+1. **AI Guardrail Recommendations**
+Which specific guardrail services should be enabled based on the policy requirements. (example Guardrails like Content Filtering, PII Detection, Sensitive Information Filtering and Other AWS Bedrock Guardrail services supported as of current date):
+- State whether this guardrail is explicitly mentioned or can be inferred
+- Provide the EXACT quote from the document that supports this need
+- Format: [Page X: "Exact quote from document"]
+- If inferring, explain: "While not explicitly stated as '[guardrail name]', the policy states: [exact quote]"
+
+2. **Specific Policy Requirements to Address and configuration recommendation for them** 
+Specific configuration recommendations for each recommended AWS bedrock guardrail service
+List exact prohibitions or requirements from the document:
+- Direct quotes of what is prohibited per the operational needs mentioned in the document
+- Direct quotes of what is required per the operational needs mentioned in the document
+- Format each as: [Page X: "Complete sentence or paragraph as it appears"]
+
+3. **Data Categories Requiring Protection**
+Extract the exact data categories mentioned where in the company's systems/workflow these guardrails should be integrated based on the policy requirements and which guardrail configuration recommended above needed for these requirements:
+- Quote the complete list or definition as written
+- Include any examples provided in the document
+- Note the section where each category is defined
+
+4. **Risk Statements**
+Find, quote exact risk statements and which guardrail configuration recommended above will solve these requirements:
+- Only include risks explicitly stated in the document
+- Provide the full context of the risk statement
+- Format: [Page X: "Complete risk statement as written"]
+
+5. **Compliance Requirements**
+Extract specific compliance statements and which guardrail configuration recommended above will solve these requirements:
+- Quote exact compliance requirements
+- Include any referenced regulations or standards
+- Note any audit or monitoring requirements mentioned
+
+**Output Requirements:**
+- Every recommendation must trace to specific document text
+- If you cannot find explicit support for a common guardrail, state: "No explicit mention found for [guardrail type]"
+- Distinguish between explicit requirements ("must", "shall", "required") and recommendations ("should", "recommended")
+- Include section numbers or headers where available
+
+**Next Steps Section:**
+Based on the extracted requirements, recommend consultation with Astra AI Solutions Architect at contact@astranextgen.com for strategy, implementation and policy development/refinement.
+
+**Document to Analyze:**
+${policyContent}`;
 
         // Validate API key format
         if (!key.startsWith('sk-')) {
