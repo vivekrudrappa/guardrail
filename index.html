@@ -1832,179 +1832,147 @@
     openai: "https://api.openai.com/v1/chat/completions"
   };
 
-  async function checkText() {
-    const inputText = document.getElementById('userInput').value;
-    const resultTabOrgDiv = document.getElementById('originalText');
-    const resultTabFilterDiv = document.getElementById('filteredInput');
-    const resultTabFinalDiv = document.getElementById('finalOutput');
-    const resultTabJsonDiv = document.getElementById('jsonOutput');
-    const key = document.getElementById("apikey").value;
-    const model = document.getElementById("model").value;
-  
-    // New demo comparison elements
-    const unsafeOutput = document.getElementById('unsafeOutput');
-    const safeOutput = document.getElementById('safeOutput');
-    const noGuardrailImpact = document.getElementById('noGuardrailImpact');
-    const guardrailImpact = document.getElementById('guardrailImpact');
-  
-    resultTabOrgDiv.textContent = "Processing...";
-    if (!key) {
-      resultTabOrgDiv.textContent = "Please enter the Open AI LLM API Key (password) above key box and retry";
-      return;
+async function checkText() {
+  const inputText = document.getElementById("inputText").value.trim();
+  const resultSection = document.getElementById("resultSection");
+  const loader = document.getElementById("loader");
+  const noGuardrailOutput = document.getElementById("noGuardrailOutput");
+  const guardrailOutput = document.getElementById("guardrailOutput");
+  const noGuardrailImpact = document.getElementById("noGuardrailImpact");
+  const guardrailImpact = document.getElementById("guardrailImpact");
+  const errorMsg = document.getElementById("errorMsg");
+
+  resultSection.style.display = "none";
+  loader.style.display = "block";
+  errorMsg.textContent = "";
+  noGuardrailOutput.textContent = "";
+  guardrailOutput.textContent = "";
+  noGuardrailImpact.innerHTML = "";
+  guardrailImpact.innerHTML = "";
+
+  try {
+    if (!inputText) {
+      throw new Error("Please enter some text to analyze.");
     }
-  
-    if (!inputText) return;
-  
-    let processedInput = inputText;
-    const useInputFilter = document.getElementById("inputFilter").checked;
-    const useOutputFilter = document.getElementById("outputFilter").checked;
-  
-    try {
-      // Show both scenarios for demo
-      unsafeOutput.innerHTML = '<div style="color: #ff6b6b;">Processing unfiltered response...</div>';
-      safeOutput.innerHTML = '<div style="color: #26de81;">Processing with guardrails...</div>';
-  
-      // First, get unfiltered response for comparison
-      let unprotectedResponse = "No response from LLM.";
-      try {
-        const respLLM = await fetch(endpoints.openai, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${key}`
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: "user", content: inputText }],
-            temperature: 0.5,
-            max_tokens: 512
-          })
-        });
-  
-        if (respLLM.ok) {
-          const dataLLM = await respLLM.json();
-          unprotectedResponse = dataLLM.choices?.[0]?.message?.content || unprotectedResponse;
-        }
-      } catch (error) {
-        unprotectedResponse = "Error generating unprotected response";
-      }
-  
-      // Update unprotected scenario
-      unsafeOutput.innerHTML = unprotectedResponse;
-      
-      // Analyze risks in unprotected response
-      const risksFound = [];
-      if (unprotectedResponse.includes('@') || /\b\d{3}-\d{2}-\d{4}\b/.test(unprotectedResponse)) {
-        risksFound.push("potential PII exposure");
-      }
-      if (unprotectedResponse.length > 300) {
-        risksFound.push("verbose output");
-      }
-      
-      const riskSummary = risksFound.length > 0 
-        ? `Detected: <span class="highlight-keyword">${risksFound.join('</span>, <span class="highlight-keyword">')}</span>`
-        : 'Unfiltered content may contain <span class="highlight-keyword">sensitive data</span> or <span class="highlight-keyword">policy violations</span>';
-      
-      noGuardrailImpact.innerHTML = riskSummary;
-  
-      // Now process with guardrails
-      let inputData = {};
-      if (useInputFilter) {
-        resultTabOrgDiv.textContent = "Applying Input Guardrails...";
-        const payload = {
-          text: processedInput,
-          filter_type: "INPUT"
-        };
-        const resp = await fetch(endpoints.aws, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!resp.ok) {
-          throw new Error(`HTTP error! Status: ${resp.status}`);
-        }
-        inputData = await resp.json();
-        processedInput = inputData.guardrail_filtered_text || processedInput;
-      }
-  
-      // Get LLM response with processed input
-      let llmResponse = "No response from LLM.";
-      resultTabOrgDiv.textContent = "Sending filtered input to Generative AI LLM...";
-  
-      const respLLM = await fetch(endpoints.openai, {
+
+    const maxRetries = 3;
+    let unprotectedResponse = "";
+    let guardrailDetectedIssues = [];
+    let protectedResponse = "";
+    let guardrailProtections = [];
+    let attempts = 0;
+    let unguardedGuardrailCheck = {};
+
+    console.log("🚀 Starting Guardrail Comparison Demo");
+
+    // ----------------------------
+    // 1️⃣ UNPROTECTED (NO GUARDRAIL) LOOP
+    // ----------------------------
+    while (attempts < maxRetries) {
+      attempts++;
+      console.log(`🧪 Attempt ${attempts}: Fetching unprotected response...`);
+
+      const resp = await fetch(endpoints.openai, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${key}`
+          "Authorization": `Bearer ${key}`,
         },
         body: JSON.stringify({
           model,
-          messages: [{ role: "user", content: processedInput }],
-          temperature: 0.5,
-          max_tokens: 512
-        })
+          messages: [{ role: "user", content: inputText }],
+        }),
       });
-  
-      if (!respLLM.ok) {
-        throw new Error(`OpenAI error! Status: ${respLLM.status}`);
+
+      const data = await resp.json();
+      unprotectedResponse = data?.choices?.[0]?.message?.content?.trim() || "";
+
+      if (!unprotectedResponse) {
+        console.warn(`⚠️ Attempt ${attempts}: No text generated, retrying...`);
+        continue;
       }
-  
-      const dataLLM = await respLLM.json();
-      llmResponse = dataLLM.choices?.[0]?.message?.content || llmResponse;
-  
-      // Apply output guardrails
-      let outputData = {};
-      if (useOutputFilter) {
-        resultTabOrgDiv.textContent = "Applying Output Guardrails...";
-        const payload = {
-          text: llmResponse,
-          filter_type: "OUTPUT"
-        };
-        const resp = await fetch(endpoints.aws, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!resp.ok) {
-          throw new Error(`HTTP error! Status: ${resp.status}`);
-        }
-        outputData = await resp.json();
-        llmResponse = outputData.guardrail_filtered_text || llmResponse;
+
+      // ✅ Call AWS Guardrail just to check for issues in unprotected response
+      const guardrailCheck = await fetch(endpoints.aws, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: unprotectedResponse,
+          filter_type: "OUTPUT",
+        }),
+      });
+
+      unguardedGuardrailCheck = await guardrailCheck.json();
+
+      const detected = unguardedGuardrailCheck?.inputData?.guardrail_response?.assessments?.[0]?.sensitiveInformationPolicy?.piiEntities || [];
+
+      if (detected.length > 0) {
+        console.log("🧩 Detected PII or guardrail violations:", detected);
+        guardrailDetectedIssues = detected.map(e => `${e.type} (${e.action})`);
+        break; // Exit retry loop once issues are detected
+      } else {
+        console.log(`ℹ️ No violations detected on attempt ${attempts}. Retrying...`);
       }
-  
-      // Update protected scenario
-      safeOutput.innerHTML = llmResponse;
-      
-      // Analyze protections applied
-      const protections = [];
-      if (useInputFilter) protections.push("input filtering");
-      if (useOutputFilter) protections.push("output filtering");
-      if (inputData.pii?.detected || outputData.pii?.detected) protections.push("PII masking");
-      
-      const protectionSummary = protections.length > 0 
-        ? `Active protections: <span class="highlight-keyword">${protections.join('</span>, <span class="highlight-keyword">')}</span>`
-        : 'Content is <span class="highlight-keyword">policy-compliant</span> and <span class="highlight-keyword">enterprise-ready</span>';
-      
-      guardrailImpact.innerHTML = protectionSummary;
-  
-      // Update existing detailed views
-      document.getElementById("originalText").value = inputText;
-      document.getElementById("inputFilterStatus").innerText = useInputFilter ? "Yes Input Filter Applied" : "No Input Filter NOT Applied";
-      document.getElementById("filteredInput").value = processedInput ? processedInput : "N/A";
-      document.getElementById("outputFilterStatus").innerText = useOutputFilter ? "Yes Output Filter Applied" : "No Output Filter NOT Applied";
-      document.getElementById("finalOutput").value = llmResponse;
-  
-      const mergedData = { inputData, outputData, unprotectedResponse, protectedResponse: llmResponse };
-      document.getElementById("jsonOutput").value = JSON.stringify(mergedData, null, 2);
-  
-    } catch (error) {
-      console.error("Error calling API via UI:", error);
-      resultTabOrgDiv.textContent = "⚠️ Error: " + error.message;
-      unsafeOutput.innerHTML = '<div style="color: #ff6b6b;">Error generating comparison</div>';
-      safeOutput.innerHTML = '<div style="color: #ff6b6b;">Error: ' + error.message + '</div>';
     }
-  // checkText function closure
+
+    if (attempts === maxRetries && guardrailDetectedIssues.length === 0) {
+      console.warn("⚠️ Retry limit reached without finding detectable issues.");
+    }
+
+    // ----------------------------
+    // 2️⃣ GUARDED (WITH GUARDRAIL)
+    // ----------------------------
+    console.log("🛡️ Invoking Guardrail-protected response...");
+
+    const guardedResp = await fetch(endpoints.aws, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: inputText,
+        filter_type: "INPUT",
+      }),
+    });
+
+    const guardedData = await guardedResp.json();
+    protectedResponse = guardedData?.outputData?.guardrail_filtered_text || guardedData?.protectedResponse || "No response";
+
+    // Extract guardrail protections dynamically
+    const assessments = guardedData?.inputData?.guardrail_response?.assessments || [];
+    for (const a of assessments) {
+      const entities = a?.sensitiveInformationPolicy?.piiEntities || [];
+      for (const e of entities) {
+        guardrailProtections.push(`${e.type} → ${e.action}`);
+      }
+    }
+
+    // ----------------------------
+    // 3️⃣ UPDATE UI RESULTS
+    // ----------------------------
+    loader.style.display = "none";
+    resultSection.style.display = "block";
+    noGuardrailOutput.textContent = unprotectedResponse || "No response generated.";
+    guardrailOutput.textContent = protectedResponse || "No response generated.";
+
+    // Build readable summaries
+    const riskSummary = guardrailDetectedIssues.length > 0
+      ? `Detected: <span class="highlight-keyword">${guardrailDetectedIssues.join('</span>, <span class="highlight-keyword">')}</span>`
+      : "Detected: <span class='highlight-keyword'>No violations found</span>";
+
+    const protectionSummary = guardrailProtections.length > 0
+      ? `Active protections: <span class="highlight-keyword">${guardrailProtections.join('</span>, <span class="highlight-keyword">')}</span>`
+      : "No guardrail actions triggered";
+
+    noGuardrailImpact.innerHTML = `<h4>⚠️ Critical Impact Summary</h4><p>${riskSummary}</p>`;
+    guardrailImpact.innerHTML = `<h4>🛡️ Guardrail Protection Summary</h4><p>${protectionSummary}</p>`;
+
+    console.log("✅ Demo completed successfully.");
+  } catch (err) {
+    loader.style.display = "none";
+    errorMsg.textContent = `❌ Error: ${err.message}`;
+    console.error("Guardrail demo error:", err);
   }
+}
+
 </script>
 
 <script>
