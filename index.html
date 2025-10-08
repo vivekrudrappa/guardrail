@@ -1832,390 +1832,420 @@
     openai: "https://api.openai.com/v1/chat/completions"
   };
 
-async function checkText() {
-  const inputText = document.getElementById('userInput').value;
-  const resultTabOrgDiv = document.getElementById('originalText');
-  const key = document.getElementById("apikey").value;
-  const model = document.getElementById("model").value;
-
-  // New demo comparison elements
-  const unsafeOutput = document.getElementById('unsafeOutput');
-  const safeOutput = document.getElementById('safeOutput');
-  const noGuardrailImpact = document.getElementById('noGuardrailImpact');
-  const guardrailImpact = document.getElementById('guardrailImpact');
-
-  resultTabOrgDiv.textContent = "Processing...";
+  async function checkText() {
+    const inputText = document.getElementById('userInput')?.value;
+    const resultTabOrgDiv = document.getElementById('originalText');
+    const resultTabFilterDiv = document.getElementById('filteredInput');
+    const resultTabFinalDiv = document.getElementById('finalOutput');
+    const resultTabJsonDiv = document.getElementById('jsonOutput');
+    const key = document.getElementById("apikey")?.value;
+    const model = document.getElementById("model")?.value;
   
-  if (!key) {
-    resultTabOrgDiv.textContent = "Please enter the Open AI LLM API Key (password) above key box and retry";
-    return;
-  }
-
-  if (!inputText) {
-    resultTabOrgDiv.textContent = "Please enter text to analyze";
-    return;
-  }
-
-  const useInputFilter = document.getElementById("inputFilter").checked;
-  const useOutputFilter = document.getElementById("outputFilter").checked;
-
-  try {
-    // Show both scenarios for demo
-    unsafeOutput.innerHTML = '<div style="color: #ff6b6b;">Processing unfiltered response...</div>';
-    safeOutput.innerHTML = '<div style="color: #26de81;">Processing with guardrails...</div>';
-
-    // ====================================================
-    // STEP 1: Get unprotected response WITH RETRY LOGIC
-    // ====================================================
-    let unprotectedResponse = "No response from LLM.";
-    let detectedIssues = [];
-    let maxRetries = 3;
-    let retryCount = 0;
-    let issuesFound = false;
-
-    resultTabOrgDiv.textContent = "Generating unprotected response...";
+    // New demo comparison elements
+    const unsafeOutput = document.getElementById('unsafeOutput');
+    const safeOutput = document.getElementById('safeOutput');
+    const noGuardrailImpact = document.getElementById('noGuardrailImpact');
+    const guardrailImpact = document.getElementById('guardrailImpact');
+  
+    // Validate all elements exist
+    if (!resultTabOrgDiv || !unsafeOutput || !safeOutput || !noGuardrailImpact || !guardrailImpact) {
+      console.error("Required DOM elements not found");
+      alert("Error: Page elements not properly loaded. Please refresh the page.");
+      return;
+    }
+  
+    resultTabOrgDiv.value = "Processing...";
     
-    while (retryCount < maxRetries && !issuesFound) {
-      try {
-        // Get LLM response without guardrails
-        const respLLM = await fetch(endpoints.openai, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${key}`
-          },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: "user", content: inputText }],
-            temperature: 0.7 + (retryCount * 0.1), // Increase temperature on retries
-            max_tokens: 512
-          })
-        });
-
-        if (respLLM.ok) {
-          const dataLLM = await respLLM.json();
-          unprotectedResponse = dataLLM.choices?.[0]?.message?.content || unprotectedResponse;
-
-          // Check if this response has guardrail issues using AWS endpoint (detection only)
-          resultTabOrgDiv.textContent = `Checking for guardrail issues (attempt ${retryCount + 1}/${maxRetries})...`;
-          
-          const detectionPayload = {
-            text: unprotectedResponse,
-            filter_type: "OUTPUT"
-          };
-
-          const detectionResp = await fetch(endpoints.aws, {
+    if (!key) {
+      resultTabOrgDiv.value = "Please enter the Open AI LLM API Key (password) above key box and retry";
+      return;
+    }
+  
+    if (!inputText || inputText.trim() === '') {
+      resultTabOrgDiv.value = "Please enter text to analyze";
+      return;
+    }
+  
+    const useInputFilter = document.getElementById("inputFilter")?.checked || false;
+    const useOutputFilter = document.getElementById("outputFilter")?.checked || false;
+  
+    try {
+      // Show both scenarios for demo
+      unsafeOutput.innerHTML = '<div style="color: #ff6b6b;">Processing unfiltered response...</div>';
+      safeOutput.innerHTML = '<div style="color: #26de81;">Processing with guardrails...</div>';
+  
+      // ====================================================
+      // STEP 1: Get unprotected response WITH RETRY LOGIC
+      // ====================================================
+      let unprotectedResponse = "No response from LLM.";
+      let detectedIssues = [];
+      let maxRetries = 3;
+      let retryCount = 0;
+      let issuesFound = false;
+  
+      resultTabOrgDiv.value = "Generating unprotected response...";
+      
+      while (retryCount < maxRetries && !issuesFound) {
+        try {
+          // Get LLM response without guardrails
+          const respLLM = await fetch(endpoints.openai, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(detectionPayload)
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${key}`
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: [{ role: "user", content: inputText }],
+              temperature: 0.7 + (retryCount * 0.1), // Increase temperature on retries
+              max_tokens: 512
+            })
           });
-
-          if (detectionResp.ok) {
-            const detectionData = await detectionResp.json();
+  
+          if (respLLM.ok) {
+            const dataLLM = await respLLM.json();
+            unprotectedResponse = dataLLM.choices?.[0]?.message?.content || unprotectedResponse;
+  
+            // Check if this response has guardrail issues using AWS endpoint (detection only)
+            resultTabOrgDiv.value = `Checking for guardrail issues (attempt ${retryCount + 1}/${maxRetries})...`;
             
-            // Extract detected issues from the response
-            detectedIssues = extractDetectedIssues(detectionData);
-            
-            if (detectedIssues.length > 0) {
-              issuesFound = true;
-              console.log(`Issues found on attempt ${retryCount + 1}:`, detectedIssues);
-            } else {
-              retryCount++;
-              if (retryCount < maxRetries) {
-                resultTabOrgDiv.textContent = `No issues detected, retrying with different parameters (${retryCount}/${maxRetries})...`;
+            const detectionPayload = {
+              text: unprotectedResponse,
+              filter_type: "OUTPUT"
+            };
+  
+            const detectionResp = await fetch(endpoints.aws, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(detectionPayload)
+            });
+  
+            if (detectionResp.ok) {
+              const detectionData = await detectionResp.json();
+              
+              // Extract detected issues from the response
+              detectedIssues = extractDetectedIssues(detectionData);
+              
+              if (detectedIssues.length > 0) {
+                issuesFound = true;
+                console.log(`Issues found on attempt ${retryCount + 1}:`, detectedIssues);
+              } else {
+                retryCount++;
+                if (retryCount < maxRetries) {
+                  resultTabOrgDiv.value = `No issues detected, retrying with different parameters (${retryCount}/${maxRetries})...`;
+                }
               }
+            } else {
+              console.warn(`Detection endpoint returned status: ${detectionResp.status}`);
+              retryCount++;
             }
+          } else {
+            throw new Error(`OpenAI API error: ${respLLM.status}`);
+          }
+        } catch (error) {
+          console.error(`Retry attempt ${retryCount + 1} failed:`, error);
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            throw error; // Re-throw on final attempt
           }
         }
-      } catch (error) {
-        console.error(`Retry attempt ${retryCount + 1} failed:`, error);
-        retryCount++;
       }
-    }
-
-    // Update unprotected scenario with detected issues
-    unsafeOutput.innerHTML = unprotectedResponse;
-    
-    // Build dynamic risk summary based on actual detected issues
-    let riskSummary = '';
-    if (detectedIssues.length > 0) {
-      const riskKeywords = detectedIssues.map(issue => 
-        `<span class="highlight-keyword">${issue}</span>`
-      ).join(', ');
-      riskSummary = `Detected: ${riskKeywords}`;
-    } else {
-      riskSummary = 'No specific issues detected, but content is <span class="highlight-keyword">unfiltered</span> and may contain <span class="highlight-keyword">policy violations</span>';
-    }
-    
-    noGuardrailImpact.innerHTML = riskSummary;
-
-    // ====================================================
-    // STEP 2: Process with guardrails (INPUT FILTER)
-    // ====================================================
-    let processedInput = inputText;
-    let inputData = {};
-    let inputProtections = [];
-
-    if (useInputFilter) {
-      resultTabOrgDiv.textContent = "Applying Input Guardrails...";
-      const payload = {
-        text: processedInput,
-        filter_type: "INPUT"
+  
+      // Update unprotected scenario with detected issues
+      unsafeOutput.innerHTML = unprotectedResponse;
+      
+      // Build dynamic risk summary based on actual detected issues
+      let riskSummary = '';
+      if (detectedIssues.length > 0) {
+        const riskKeywords = detectedIssues.map(issue => 
+          `<span class="highlight-keyword">${issue}</span>`
+        ).join(', ');
+        riskSummary = `Detected: ${riskKeywords}`;
+      } else {
+        riskSummary = 'No specific issues detected, but content is <span class="highlight-keyword">unfiltered</span> and may contain <span class="highlight-keyword">policy violations</span>';
+      }
+      
+      noGuardrailImpact.innerHTML = riskSummary;
+  
+      // ====================================================
+      // STEP 2: Process with guardrails (INPUT FILTER)
+      // ====================================================
+      let processedInput = inputText;
+      let inputData = {};
+      let inputProtections = [];
+  
+      if (useInputFilter) {
+        resultTabOrgDiv.value = "Applying Input Guardrails...";
+        const payload = {
+          text: processedInput,
+          filter_type: "INPUT"
+        };
+        
+        const resp = await fetch(endpoints.aws, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!resp.ok) {
+          throw new Error(`HTTP error from input guardrail! Status: ${resp.status}`);
+        }
+        
+        inputData = await resp.json();
+        processedInput = inputData.guardrail_filtered_text || processedInput;
+        
+        // Extract protections applied to input
+        inputProtections = extractProtectionsApplied(inputData);
+      }
+  
+      // ====================================================
+      // STEP 3: Get LLM response with processed input
+      // ====================================================
+      let llmResponse = "No response from LLM.";
+      resultTabOrgDiv.value = "Sending filtered input to Generative AI LLM...";
+  
+      const respLLM = await fetch(endpoints.openai, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: "user", content: processedInput }],
+          temperature: 0.5,
+          max_tokens: 512
+        })
+      });
+  
+      if (!respLLM.ok) {
+        throw new Error(`OpenAI error! Status: ${respLLM.status}`);
+      }
+  
+      const dataLLM = await respLLM.json();
+      llmResponse = dataLLM.choices?.[0]?.message?.content || llmResponse;
+  
+      // ====================================================
+      // STEP 4: Apply output guardrails
+      // ====================================================
+      let outputData = {};
+      let outputProtections = [];
+  
+      if (useOutputFilter) {
+        resultTabOrgDiv.value = "Applying Output Guardrails...";
+        const payload = {
+          text: llmResponse,
+          filter_type: "OUTPUT"
+        };
+        
+        const resp = await fetch(endpoints.aws, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!resp.ok) {
+          throw new Error(`HTTP error from output guardrail! Status: ${resp.status}`);
+        }
+        
+        outputData = await resp.json();
+        llmResponse = outputData.guardrail_filtered_text || llmResponse;
+        
+        // Extract protections applied to output
+        outputProtections = extractProtectionsApplied(outputData);
+      }
+  
+      // ====================================================
+      // STEP 5: Update protected scenario
+      // ====================================================
+      safeOutput.innerHTML = llmResponse;
+      
+      // Build dynamic protection summary
+      const allProtections = [...inputProtections, ...outputProtections];
+      let protectionSummary = '';
+      
+      if (allProtections.length > 0) {
+        const protectionKeywords = allProtections.map(protection => 
+          `<span class="highlight-keyword">${protection}</span>`
+        ).join(', ');
+        protectionSummary = `Active protections: ${protectionKeywords}`;
+      } else {
+        protectionSummary = 'Content is <span class="highlight-keyword">policy-compliant</span> and <span class="highlight-keyword">enterprise-ready</span>';
+      }
+      
+      guardrailImpact.innerHTML = protectionSummary;
+  
+      // ====================================================
+      // STEP 6: Update detailed views
+      // ====================================================
+      if (resultTabOrgDiv) resultTabOrgDiv.value = inputText;
+      
+      const inputFilterStatus = document.getElementById("inputFilterStatus");
+      if (inputFilterStatus) {
+        inputFilterStatus.innerText = useInputFilter ? "Yes - Input Filter Applied" : "No - Input Filter NOT Applied";
+      }
+      
+      if (resultTabFilterDiv) resultTabFilterDiv.value = processedInput || "N/A";
+      
+      const outputFilterStatus = document.getElementById("outputFilterStatus");
+      if (outputFilterStatus) {
+        outputFilterStatus.innerText = useOutputFilter ? "Yes - Output Filter Applied" : "No - Output Filter NOT Applied";
+      }
+      
+      if (resultTabFinalDiv) resultTabFinalDiv.value = llmResponse;
+  
+      const mergedData = { 
+        inputData, 
+        outputData, 
+        unprotectedResponse, 
+        protectedResponse: llmResponse,
+        detectedIssues,
+        appliedProtections: allProtections
       };
       
-      const resp = await fetch(endpoints.aws, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!resp.ok) {
-        throw new Error(`HTTP error! Status: ${resp.status}`);
-      }
-      
-      inputData = await resp.json();
-      processedInput = inputData.guardrail_filtered_text || processedInput;
-      
-      // Extract protections applied to input
-      inputProtections = extractProtectionsApplied(inputData);
-    }
-
-    // ====================================================
-    // STEP 3: Get LLM response with processed input
-    // ====================================================
-    let llmResponse = "No response from LLM.";
-    resultTabOrgDiv.textContent = "Sending filtered input to Generative AI LLM...";
-
-    const respLLM = await fetch(endpoints.openai, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${key}`
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: processedInput }],
-        temperature: 0.5,
-        max_tokens: 512
-      })
-    });
-
-    if (!respLLM.ok) {
-      throw new Error(`OpenAI error! Status: ${respLLM.status}`);
-    }
-
-    const dataLLM = await respLLM.json();
-    llmResponse = dataLLM.choices?.[0]?.message?.content || llmResponse;
-
-    // ====================================================
-    // STEP 4: Apply output guardrails
-    // ====================================================
-    let outputData = {};
-    let outputProtections = [];
-
-    if (useOutputFilter) {
-      resultTabOrgDiv.textContent = "Applying Output Guardrails...";
-      const payload = {
-        text: llmResponse,
-        filter_type: "OUTPUT"
-      };
-      
-      const resp = await fetch(endpoints.aws, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!resp.ok) {
-        throw new Error(`HTTP error! Status: ${resp.status}`);
-      }
-      
-      outputData = await resp.json();
-      llmResponse = outputData.guardrail_filtered_text || llmResponse;
-      
-      // Extract protections applied to output
-      outputProtections = extractProtectionsApplied(outputData);
-    }
-
-    // ====================================================
-    // STEP 5: Update protected scenario
-    // ====================================================
-    safeOutput.innerHTML = llmResponse;
-    
-    // Build dynamic protection summary
-    const allProtections = [...inputProtections, ...outputProtections];
-    let protectionSummary = '';
-    
-    if (allProtections.length > 0) {
-      const protectionKeywords = allProtections.map(protection => 
-        `<span class="highlight-keyword">${protection}</span>`
-      ).join(', ');
-      protectionSummary = `Active protections: ${protectionKeywords}`;
-    } else {
-      protectionSummary = 'Content is <span class="highlight-keyword">policy-compliant</span> and <span class="highlight-keyword">enterprise-ready</span>';
-    }
-    
-    guardrailImpact.innerHTML = protectionSummary;
-
-    // ====================================================
-    // STEP 6: Update detailed views
-    // ====================================================
-    document.getElementById("originalText").value = inputText;
-    document.getElementById("inputFilterStatus").innerText = useInputFilter ? "Yes - Input Filter Applied" : "No - Input Filter NOT Applied";
-    document.getElementById("filteredInput").value = processedInput || "N/A";
-    document.getElementById("outputFilterStatus").innerText = useOutputFilter ? "Yes - Output Filter Applied" : "No - Output Filter NOT Applied";
-    document.getElementById("finalOutput").value = llmResponse;
-
-    const mergedData = { 
-      inputData, 
-      outputData, 
-      unprotectedResponse, 
-      protectedResponse: llmResponse,
-      detectedIssues,
-      appliedProtections: allProtections
-    };
-    document.getElementById("jsonOutput").value = JSON.stringify(mergedData, null, 2);
-
-    resultTabOrgDiv.textContent = "Analysis complete!";
-
-  } catch (error) {
-    console.error("Error calling API via UI:", error);
-    resultTabOrgDiv.textContent = "⚠️ Error: " + error.message;
-    unsafeOutput.innerHTML = '<div style="color: #ff6b6b;">Error generating comparison</div>';
-    safeOutput.innerHTML = '<div style="color: #ff6b6b;">Error: ' + error.message + '</div>';
-  }
-}
-
-// ====================================================
-// HELPER FUNCTION: Extract detected issues
-// ====================================================
-function extractDetectedIssues(data) {
-  const issues = [];
+      if (resultTabJsonDiv) resultTabJsonDiv.value = JSON.stringify(mergedData, null, 2);
   
-  try {
-    // Check for PII detection
-    if (data.pii_detected || data.pii?.detected) {
-      const assessments = data.guardrail_response?.assessments || [];
-      assessments.forEach(assessment => {
-        if (assessment.sensitiveInformationPolicy?.piiEntities) {
-          assessment.sensitiveInformationPolicy.piiEntities.forEach(entity => {
-            if (entity.detected) {
-              issues.push(`${entity.type.replace(/_/g, ' ')}`);
-            }
-          });
-        }
-      });
-    }
-
-    // Check for content policy violations
-    if (data.guardrail_response?.assessments) {
-      data.guardrail_response.assessments.forEach(assessment => {
-        if (assessment.contentPolicy?.filters) {
-          assessment.contentPolicy.filters.forEach(filter => {
-            if (filter.action === 'BLOCKED') {
-              issues.push(`${filter.type} content (${filter.confidence})`);
-            }
-          });
-        }
-        
-        // Check for topic policy
-        if (assessment.topicPolicy?.topics) {
-          assessment.topicPolicy.topics.forEach(topic => {
-            if (topic.action === 'BLOCKED') {
-              issues.push(`Denied topic: ${topic.name}`);
-            }
-          });
-        }
-        
-        // Check for word policy
-        if (assessment.wordPolicy?.customWords || assessment.wordPolicy?.managedWordLists) {
-          issues.push('Profanity or banned words');
-        }
-      });
-    }
-
-    // Check guardrail action
-    if (data.content_blocked_by_guardrail || data.guardrail_action === 'GUARDRAIL_INTERVENED') {
-      if (issues.length === 0) {
-        issues.push('Policy violation');
-      }
-    }
-
-  } catch (error) {
-    console.error('Error extracting issues:', error);
-  }
-
-  // Remove duplicates
-  return [...new Set(issues)];
-}
-
-// ====================================================
-// HELPER FUNCTION: Extract protections applied
-// ====================================================
-function extractProtectionsApplied(data) {
-  const protections = [];
+      // Update status at the top
+      const originalTextArea = document.getElementById('originalText');
+      if (originalTextArea) originalTextArea.value = inputText;
   
-  try {
-    // Check what actions were taken
-    const action = data.guardrail_action || data.guardrail_response?.action;
-    
-    if (action === 'GUARDRAIL_INTERVENED') {
-      // PII Masking
-      const assessments = data.guardrail_response?.assessments || [];
-      assessments.forEach(assessment => {
-        if (assessment.sensitiveInformationPolicy?.piiEntities) {
-          const anonymized = assessment.sensitiveInformationPolicy.piiEntities.filter(
-            entity => entity.action === 'ANONYMIZED'
-          );
-          if (anonymized.length > 0) {
-            const types = anonymized.map(e => e.type.replace(/_/g, ' ')).join(', ');
-            protections.push(`PII masking (${anonymized.length} items)`);
-          }
-        }
-        
-        // Content blocking
-        if (assessment.contentPolicy?.filters) {
-          const blocked = assessment.contentPolicy.filters.filter(f => f.action === 'BLOCKED');
-          blocked.forEach(filter => {
-            protections.push(`${filter.type} content blocked`);
-          });
-        }
-        
-        // Topic filtering
-        if (assessment.topicPolicy?.topics) {
-          const blocked = assessment.topicPolicy.topics.filter(t => t.action === 'BLOCKED');
-          blocked.forEach(topic => {
-            protections.push(`Topic filtering: ${topic.name}`);
-          });
-        }
-        
-        // Word filtering
-        if (assessment.wordPolicy) {
-          if (assessment.wordPolicy.customWords?.length > 0) {
-            protections.push('Custom word filtering');
-          }
-          if (assessment.wordPolicy.managedWordLists?.length > 0) {
-            protections.push('Profanity filtering');
-          }
-        }
-      });
-    } else if (action === 'NONE') {
-      protections.push('Content validated - no issues found');
+    } catch (error) {
+      console.error("Error calling API via UI:", error);
+      if (resultTabOrgDiv) resultTabOrgDiv.value = "⚠️ Error: " + error.message;
+      unsafeOutput.innerHTML = '<div style="color: #ff6b6b;">Error generating comparison: ' + error.message + '</div>';
+      safeOutput.innerHTML = '<div style="color: #ff6b6b;">Error: ' + error.message + '</div>';
     }
-
-    // Add filter type information
-    const filterType = data.filter_type;
-    if (filterType && protections.length > 0) {
-      protections[0] = `${filterType.toLowerCase()} filtering: ${protections[0]}`;
-    }
-
-  } catch (error) {
-    console.error('Error extracting protections:', error);
   }
-
-  // Remove duplicates
-  return [...new Set(protections)];
-}
+  
+  // ====================================================
+  // HELPER FUNCTION: Extract detected issues
+  // ====================================================
+  function extractDetectedIssues(data) {
+    const issues = [];
+    
+    try {
+      // Check for PII detection
+      if (data.pii_detected || data.pii?.detected) {
+        const assessments = data.guardrail_response?.assessments || [];
+        assessments.forEach(assessment => {
+          if (assessment.sensitiveInformationPolicy?.piiEntities) {
+            const detectedTypes = new Set();
+            assessment.sensitiveInformationPolicy.piiEntities.forEach(entity => {
+              if (entity.detected) {
+                detectedTypes.add(entity.type.replace(/_/g, ' ').toLowerCase());
+              }
+            });
+            detectedTypes.forEach(type => issues.push(type));
+          }
+        });
+      }
+  
+      // Check for content policy violations
+      if (data.guardrail_response?.assessments) {
+        data.guardrail_response.assessments.forEach(assessment => {
+          if (assessment.contentPolicy?.filters) {
+            assessment.contentPolicy.filters.forEach(filter => {
+              if (filter.action === 'BLOCKED') {
+                issues.push(`${filter.type.toLowerCase()} content`);
+              }
+            });
+          }
+          
+          // Check for topic policy
+          if (assessment.topicPolicy?.topics) {
+            assessment.topicPolicy.topics.forEach(topic => {
+              if (topic.action === 'BLOCKED') {
+                issues.push(`denied topic: ${topic.name}`);
+              }
+            });
+          }
+          
+          // Check for word policy
+          if (assessment.wordPolicy?.customWords && assessment.wordPolicy.customWords.length > 0) {
+            issues.push('banned words');
+          }
+          if (assessment.wordPolicy?.managedWordLists && assessment.wordPolicy.managedWordLists.length > 0) {
+            issues.push('profanity');
+          }
+        });
+      }
+  
+      // Check guardrail action
+      if (data.content_blocked_by_guardrail || data.guardrail_action === 'GUARDRAIL_INTERVENED') {
+        if (issues.length === 0) {
+          issues.push('policy violation');
+        }
+      }
+  
+    } catch (error) {
+      console.error('Error extracting issues:', error);
+    }
+  
+    // Remove duplicates and return
+    return [...new Set(issues)];
+  }
+  
+  // ====================================================
+  // HELPER FUNCTION: Extract protections applied
+  // ====================================================
+  function extractProtectionsApplied(data) {
+    const protections = [];
+    
+    try {
+      // Check what actions were taken
+      const action = data.guardrail_action || data.guardrail_response?.action;
+      
+      if (action === 'GUARDRAIL_INTERVENED') {
+        // PII Masking
+        const assessments = data.guardrail_response?.assessments || [];
+        assessments.forEach(assessment => {
+          if (assessment.sensitiveInformationPolicy?.piiEntities) {
+            const anonymized = assessment.sensitiveInformationPolicy.piiEntities.filter(
+              entity => entity.action === 'ANONYMIZED'
+            );
+            if (anonymized.length > 0) {
+              const uniqueTypes = new Set(anonymized.map(e => e.type.replace(/_/g, ' ').toLowerCase()));
+              protections.push(`PII masked: ${Array.from(uniqueTypes).join(', ')} (${anonymized.length} instances)`);
+            }
+          }
+          
+          // Content blocking
+          if (assessment.contentPolicy?.filters) {
+            const blocked = assessment.contentPolicy.filters.filter(f => f.action === 'BLOCKED');
+            blocked.forEach(filter => {
+              protections.push(`${filter.type.toLowerCase()} content blocked`);
+            });
+          }
+          
+          // Topic filtering
+          if (assessment.topicPolicy?.topics) {
+            const blocked = assessment.topicPolicy.topics.filter(t => t.action === 'BLOCKED');
+            blocked.forEach(topic => {
+              protections.push(`topic blocked: ${topic.name}`);
+            });
+          }
+          
+          // Word filtering
+          if (assessment.wordPolicy) {
+            if (assessment.wordPolicy.customWords && assessment.wordPolicy.customWords.length > 0) {
+              protections.push(`custom words filtered (${assessment.wordPolicy.customWords.length})`);
+            }
+            if (assessment.wordPolicy.managedWordLists && assessment.wordPolicy.managedWordLists.length > 0) {
+              protections.push('profanity filtered');
+            }
+          }
+        });
+      } else if (action === 'NONE') {
+        protections.push('no violations detected');
+      }
+  
+    } catch (error) {
+      console.error('Error extracting protections:', error);
+    }
+  
+    // Remove duplicates
+    return [...new Set(protections)];
+  }
 
 </script>
 
